@@ -2,6 +2,7 @@ package users
 
 import (
 	models "attsys/models"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -16,7 +17,7 @@ type htmlresponse struct {
 
 func Signin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	defer reviveProcess()
+	// defer reviveProcess()
 	if r.Method == "GET" {
 		fmt.Print("GET")
 		tmp, _ := template.ParseFiles("user/frontend/signin.html")
@@ -24,6 +25,7 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		fmt.Print("POST")
+
 		err := r.ParseForm()
 		if err == nil {
 			params := r.Form
@@ -51,7 +53,7 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 }
 func Signup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	defer reviveProcess()
+	// defer reviveProcess()
 	msg := htmlresponse{
 		Response: "",
 	}
@@ -63,33 +65,30 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		fmt.Print("POST")
-		err := r.ParseForm()
-
+		var params models.Signup
+		err := json.NewDecoder(r.Body).Decode(&params)
 		if err == nil {
-			params := r.Form
-			fmt.Println(params["image"][0])
-			fmt.Println("Password:" + params["password"][0])
-			if params["password"][0] == params["password"][1] {
-				encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(params["password"][0]), 8)
+			if params.Password[0] == params.Password[1] {
+				encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(params.Password[0]), 8)
 				newUser := models.User{
-					Email:     params["email"][0],
-					Firstname: params["fname"][0],
-					Lastname:  params["lname"][0],
+					Email:     params.Email,
+					Firstname: params.Firstname,
+					Lastname:  params.Lastname,
 					Password:  string(encryptedPassword),
 				}
 				if !checkUser(newUser.Email) {
 					insertUser(newUser)
+					saveUserImage(params.Image)
 				} else {
 					msg.Response = "Email already exist!"
 				}
 			} else {
 				msg.Response = "Password not matching!"
 			}
-
 		}
-		tmp, _ := template.ParseFiles("user/frontend/signup.html")
-
-		tmp.Execute(w, nil)
+		json.NewEncoder(w).Encode(msg)
+		// tmp, _ := template.ParseFiles("user/frontend/signup.html")
+		// tmp.Execute(w, msg)
 	}
 
 }

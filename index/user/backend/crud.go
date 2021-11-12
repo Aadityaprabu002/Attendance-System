@@ -3,25 +3,30 @@ package users
 import (
 	connections "attsys/connections"
 	"attsys/models"
+	"bytes"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
+	"image/png"
+	"os"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-func reviveProcess() {
-	if r := recover(); r != nil {
-		fmt.Println("Process Revived!!")
-	}
-}
+// func reviveProcess() {
+// 	if r := recover(); r != nil {
+// 		fmt.Println("Process Revived!!")
+// 	}
+// }
 
 func insertUser(newUser models.User) {
-	defer reviveProcess()
+	// defer reviveProcess()
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	fmt.Println("Connection: " + conn)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 	defer db.Close()
@@ -41,11 +46,12 @@ func insertUser(newUser models.User) {
 }
 
 func checkUser(email string) bool {
-	defer reviveProcess()
+	// defer reviveProcess()
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
-
+	fmt.Println(conn)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 	defer db.Close()
@@ -67,7 +73,7 @@ func checkUser(email string) bool {
 }
 
 func validUser(user models.User) bool {
-	defer reviveProcess()
+	// defer reviveProcess()
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 
 	db, err := sql.Open("postgres", conn)
@@ -95,4 +101,26 @@ func validUser(user models.User) bool {
 	}
 	return false
 
+}
+
+func saveUserImage(b64 string) {
+	list := strings.Split(b64, ",")
+	b := list[1]
+	unbased, err := base64.StdEncoding.DecodeString(b)
+	if err != nil {
+		panic("Cannot decode base64")
+	}
+	r := bytes.NewReader(unbased)
+	im, err := png.Decode(r)
+	if err != nil {
+		panic("Bad png")
+	}
+	f, err := os.OpenFile("../dummy/example.png", os.O_WRONLY|os.O_CREATE, 0777)
+	if err != nil {
+		panic("Cannot open file")
+	}
+	err = png.Encode(f, im)
+	if err != nil {
+		panic("Error saving the file")
+	}
 }
