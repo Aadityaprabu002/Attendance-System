@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+        <form id="form">
+            <table style="text-align: left;">
+                <tr><th style="text-align: center;" colspan="2">SIGN UP</th></tr>
+                <tr>
+                    <th>FIRST NAME:</th> <td><input id="fname" type="text"></td>
+                </tr>
+                <tr>
+                    <th>LAST NAME:</th> <td><input id="lname" type="text"></td>
+                </tr>
+                <tr>
+                    <th>EMAIL:</th> <td><input id="email" type="email"></td>
+                </tr>
+                <tr>
+                    <th>PASSWORD:</th> <td><input id="password" type="password"></td>
+                </tr>
+                <tr>
+                    <th>CONFIRM PASSWORD:</th> <td><input id="password" type="password"></td>
+                </tr>
+                <tr><th style="text-align: center;"colspan="2"><button onclick="submitForm()" type="button">SUBMIT</button></th></tr>
+                <tr><th id="response" style="text-align: center;" colspan="2">{{.Response}}</th></tr>
+
+                <video id="player" controls autoplay></video>
+                <button type="button" value = "0" id="capture" >Capture</button>
+                <canvas id="canvas" width=320 height=240></canvas>
+
+                
+                <script>
+                
+
+                const player = document.getElementById('player');
+                player.removeAttribute('controls') ;  
+
+                const canvas = document.getElementById('canvas');
+                const context = canvas.getContext('2d');
+                
+                const captureButton = document.getElementById('capture');
+
+                const constraints = {
+                    video: true,
+                };
+                // Attach the video stream to the video element and autoplay.
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .then((stream) => {
+                    player.srcObject = stream;
+                });
+
+                captureButton.addEventListener('click', () => {
+                    // Draw the video frame to the canvas.
+                    if(captureButton.value == "1"){
+                        console.log('CAMERA ENABLED');
+
+                        navigator.mediaDevices.getUserMedia(constraints)
+                            .then((stream) => {
+                            player.srcObject = stream;
+                        });
+                        
+                        player.style.display = '';
+                        captureButton.innerText = 'Capture';
+                        captureButton.value = "0";
+                    }else{
+                        console.log('CAMERA DISABLED');
+                        context.drawImage(player, 0, 0, canvas.width, canvas.height);
+                        var imageData = canvas.toDataURL('image/jpeg');
+                        player.srcObject.getVideoTracks().forEach(track => track.stop());
+                        player.style.display = 'none';
+                        captureButton.innerText = 'Retake';
+                        captureButton.value = "1";
+                    }
+                });
+
+            
+
+                function submitForm(){
+                    var form = new FormData(document.getElementById("form"));
+                    let image64 = document.getElementById("canvas").toDataURL('image/png');
+                    let fname = document.querySelector("#fname").value;
+                    let lname = document.querySelector("#lname").value;
+                    let password = document.querySelectorAll("#password"); 
+                    let email = document.querySelector("#email").value; 
+                    form.append("image",image64);
+                    form.append("fname",fname);
+                    form.append("password[]",password[0].value);
+                    form.append("password[]",password[1].value);
+                    form.append("email",email);
+                    console.log(form);
+                    sendRequest(form);
+                }
+
+                function sendRequest(form){
+                    xhr = new XMLHttpRequest();
+                    xhr.onreadystatechange = function(){
+                        if(this.readyState == 4 && this.status == 200){
+                            var result = JSON.parse(this.responseText);
+                            document.querySelector("#response").innerHTML =  result.Response; 
+                        }
+                    }
+                    xhr.open("POST","/signup");
+                    xhr.send(form);
+                }
+                
+                </script>
+            </table>
+        </form>
+
+</body>
+</html>
