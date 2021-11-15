@@ -3,11 +3,9 @@ package users
 import (
 	connections "attsys/connections"
 	"attsys/models"
-	"bytes"
 	"database/sql"
-	"encoding/base64"
 	"fmt"
-	"image/png"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -26,21 +24,22 @@ func insertUser(newUser models.User) {
 	fmt.Println("Connection: " + conn)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+		panic("failed to establish connection with sql")
 	}
 	defer db.Close()
 
 	query := fmt.Sprintf(`
-				Insert into users (email,firstname,lastname,password)
-				values('%s','%s','%s','%s')
-				`, newUser.Email, newUser.Firstname, newUser.Lastname, newUser.Password)
+				Insert into students (email,firstname,lastname,password,regnumber)
+				values('%s','%s','%s','%s','%s') 
+				`, newUser.Email, newUser.Firstname, newUser.Lastname, newUser.Password, newUser.Regnumber)
 
 	query = strings.TrimSpace(query)
+	fmt.Print(query)
 	_, err = db.Exec(query)
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		panic("Failed to execute query")
 	}
 
 }
@@ -55,7 +54,7 @@ func checkUser(email string) bool {
 		panic(err)
 	}
 	defer db.Close()
-	query := fmt.Sprintf(`select exists(select 1 from users where email = '%s')`, email)
+	query := fmt.Sprintf(`select exists(select 1 from students where email = '%s')`, email)
 	query = strings.TrimSpace(query)
 
 	result, err := db.Query(query)
@@ -81,7 +80,7 @@ func validUser(user models.User) bool {
 		panic(err)
 	}
 	defer db.Close()
-	query := fmt.Sprintf(`select password from users where email = '%s' limit 1`, user.Email)
+	query := fmt.Sprintf(`select password from students where email = '%s' limit 1`, user.Email)
 	query = strings.TrimSpace(query)
 	fmt.Println(query)
 	result, err := db.Query(query)
@@ -103,24 +102,24 @@ func validUser(user models.User) bool {
 
 }
 
-func saveUserImage(b64 string) {
-	list := strings.Split(b64, ",")
-	b := list[1]
-	unbased, err := base64.StdEncoding.DecodeString(b)
+func saveUserImageData(regnumber string, b64 string) bool {
+
+	dir := fmt.Sprintf("../database/%s/", regnumber)
+	err := os.Mkdir(dir, 0777)
 	if err != nil {
-		panic("Cannot decode base64")
+		fmt.Println("Failed creating directory for new student")
 	}
-	r := bytes.NewReader(unbased)
-	im, err := png.Decode(r)
+
+	tempFile, err := ioutil.TempFile(dir, "*.txt")
 	if err != nil {
-		panic("Bad png")
+		fmt.Println("Error creating user image file")
+		return false
 	}
-	f, err := os.OpenFile("../dummy/example.png", os.O_WRONLY|os.O_CREATE, 0777)
+	defer tempFile.Close()
+	_, err = tempFile.Write([]byte(b64))
 	if err != nil {
-		panic("Cannot open file")
+		fmt.Println("Error writing user image file")
+		return false
 	}
-	err = png.Encode(f, im)
-	if err != nil {
-		panic("Error saving the file")
-	}
+	return true
 }

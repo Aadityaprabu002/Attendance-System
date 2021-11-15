@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign up</title>
+</head>
+<body>
+        <form  id="form" >
+            <table style="text-align: left;">
+                <tr><th style="text-align: center;" colspan="2">SIGN UP</th></tr>
+                <tr>
+                    <th>FIRST NAME:</th> <td><input name="fname" id="fname" type="text"></td>
+                </tr>
+                <tr>
+                    <th>LAST NAME:</th> <td><input name="lname" id="lname" type="text"></td>
+                </tr>
+                <tr>
+                    <th>ROLL NUMBER:</th> <td><input name="rollno" id="rollno" type="text"></td>
+                </tr>
+                <tr>
+                    <th>EMAIL:</th> <td><input name="email" id="email" type="email"></td>
+                </tr>
+                <tr>
+                    <th>PASSWORD:</th> <td><input name="password" id="password" type="password"></td>
+                </tr>
+                <tr>
+                    <th>CONFIRM PASSWORD:</th> <td><input name="password" id="password" type="password"></td>
+                </tr>
+                <tr><th style="text-align: center;"colspan="2"><button onclick="submitForm()" type="button">SUBMIT</button></th></tr>
+                <tr><th style="text-align: center;" id="response" style="text-align: center;" colspan="2">{{.Response}}</th></tr>
+            
+                <video id="player" controls autoplay></video>
+                <button type="button" value = "0" id="capture" >Capture</button>
+                <div id="face-detection"></div>
+                <canvas id="canvas" width=320 height=240></canvas>
+            </table>
+        </form>
+        <script src="/static/signup/face-api.min.js"></script>
+        <script src="/static/signup/signup.js"></script>
+    </body>
+</html>

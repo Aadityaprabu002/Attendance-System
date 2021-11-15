@@ -1,59 +1,58 @@
 package main
 
 import (
-	"bytes"
-	"encoding/base64"
 	"fmt"
-	"image/jpeg"
+	"html/template"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/mux"
 )
 
-func toBase64(b []byte) string {
-	return base64.StdEncoding.EncodeToString(b)
-}
-func main() {
-	rb, err := ioutil.ReadFile("001.jpg")
+func foo(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		tmp, _ := template.ParseFiles("dummy.html")
+		tmp.Execute(w, nil)
+		return
+	}
+
+	err := r.ParseMultipartForm(4096)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(r.FormValue("image"))
+	file, handler, err := r.FormFile("image")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	var b string
+	fmt.Printf("Uploaded file:%+v\n", handler.Filename)
+	fmt.Printf("File size:%+v\n", handler.Size)
+	fmt.Printf("MIME header:%+v\n", handler.Header)
 
-	// Determine the content type of the image file
-	mimeType := http.DetectContentType(rb)
-
-	// Prepend the appropriate URI scheme header depending
-	// on the MIME type
-	switch mimeType {
-	case "image/jpeg":
-		b += "data:image/jpeg;base64,"
-	case "image/png":
-		b += "data:image/png;base64,"
-	}
-
-	// Append the base64 encoded output
-	b += toBase64(rb)
-	// fmt.Println(b)
-
-	unbased, err := base64.StdEncoding.DecodeString(b)
+	cur, _ := os.Getwd()
+	tempFile, err := ioutil.TempFile(cur, "upload-*.png")
 	if err != nil {
-		panic("Cannot decode b64")
+		fmt.Println(err)
 	}
+	defer tempFile.Close()
 
-	r := bytes.NewReader(unbased)
-	im, err := jpeg.Decode(r)
+	fileBytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		panic("Bad jpeg")
+		fmt.Println(err)
 	}
+	tempFile.Write(fileBytes)
 
-	f, err := os.OpenFile("example.jpeg", os.O_WRONLY|os.O_CREATE, 0777)
-	if err != nil {
-		panic("Cannot open file")
-	}
-	var opt jpeg.Options
-	opt.Quality = 100
-	jpeg.Encode(f, im, &opt)
+	w.Write([]byte("Success!"))
+}
 
+func initRouter() {
+	r := mux.NewRouter()
+	r.HandleFunc("/", foo)
+	log.Fatal(http.ListenAndServe(":4040", r))
+}
+func main() {
+	initRouter()
 }

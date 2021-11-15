@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <input id="i1" type="file" accept="image/*">
+    <img id="o1" src="" alt="">
+    <input id="i2" type="file" accept="image/*">
+    <img id="o2" src="" alt="">
+    <!-- <button onclick="render();">render</button>
+    <button onclick="compare();">compare</button>
+     -->
+    <script>
+        function imageTob64(image,holder){
+            var reader = new FileReader();
+            reader.onload = function(event){
+                var src= event.target.result;
+                holder.src = src;
+                
+            }       
+            reader.readAsDataURL(image);  
+        }
+        function render(){
+            var img1 = document.getElementById("i1").files[0];
+            var img2 = document.getElementById("i2").files[0];
+            var holder1 = document.getElementById("o1");
+            var holder2 = document.getElementById("o2");
+            imageTob64(img1,holder1);
+            imageTob64(img2,holder2);
+        }
+        function compare(){
+            var img1 = document.getElementById("i1").files[0];
+            var img2 = document.getElementById("i2").files[0];
+            let face1 = new Image();
+            let face2 = new Image();
+            face1.src = URL.createObjectURL(img1);
+            face2.src = URL.createObjectURL(img2);
+    
+            const des1 = faceapi.detectAllFaces(face1,new faceapi.SsdMobilenetv1Options()) .withFaceLandmarks().withFaceDescriptors()
+            const des2 = faceapi.detectAllFaces(face2,new faceapi.SsdMobilenetv1Options()) .withFaceLandmarks().withFaceDescriptors()
+            console.log(des1,des2);
+            const dist =  faceapi.euclideanDistance(des1, des2);
+            console.log(dist);
+        }
+
+    </script>
+    <script src="/public/face-api.min.js"></script>
+    <script>
+        Promise.all(
+            [
+            faceapi.nets.tinyFaceDetector.loadFromUri('/public/models'),
+            faceapi.nets.faceLandmark68Net.loadFromUri('/public/models'),
+            faceapi.nets.faceRecognitionNet.loadFromUri('/public/models'),
+            faceapi.nets.faceExpressionNet.loadFromUri('/public/models'),
+            faceapi.nets.ssdMobilenetv1.loadFromUri('/public/models')
+            ]
+        ).then(
+            function(){
+              
+                let btn = document.createElement('button');
+                btn.innerHTML = 'Render';
+                btn.onclick = render;
+
+                document.body.appendChild(btn);
+
+                btn = document.createElement('button');
+                btn.innerHTML = 'Compare';
+                btn.onclick = compare;
+
+               document.body.appendChild(btn);
+
+            }
+        )
+    </script>
+   
+</body>
+</html>

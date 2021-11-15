@@ -20,20 +20,20 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 	// defer reviveProcess()
 	if r.Method == "GET" {
 		fmt.Print("GET")
-		tmp, _ := template.ParseFiles("user/frontend/signin.html")
+		tmp, _ := template.ParseFiles("user/frontend/signin/signin.html")
 		tmp.Execute(w, nil)
 		return
 	} else {
 		fmt.Print("POST")
-
-		err := r.ParseForm()
+		var params models.Signin
+		err := json.NewDecoder(r.Body).Decode(&params)
 		if err == nil {
 			params := r.Form
 			fmt.Println("Password:" + params["password"][0])
 			user := models.User{
 				Email:     params["email"][0],
 				Password:  params["password"][0],
-				Firstname: "",
+				Regnumber: params["regnumber"][0],
 				Lastname:  "",
 			}
 			if checkUser(user.Email) {
@@ -60,7 +60,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 		fmt.Print("GET")
-		tmp, _ := template.ParseFiles("user/frontend/signup.html")
+		tmp, _ := template.ParseFiles("user/frontend/signup/signup.html")
 		tmp.Execute(w, msg)
 		return
 	} else {
@@ -74,11 +74,17 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 					Email:     params.Email,
 					Firstname: params.Firstname,
 					Lastname:  params.Lastname,
+					Regnumber: params.Regnumber,
 					Password:  string(encryptedPassword),
 				}
 				if !checkUser(newUser.Email) {
-					insertUser(newUser)
-					saveUserImage(params.Image)
+					if saveUserImageData(newUser.Regnumber, params.Image) {
+						insertUser(newUser)
+						msg.Response = "Successfully account created!"
+					} else {
+						fmt.Println("Failed creating a record!")
+					}
+
 				} else {
 					msg.Response = "Email already exist!"
 				}
@@ -87,8 +93,16 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		json.NewEncoder(w).Encode(msg)
-		// tmp, _ := template.ParseFiles("user/frontend/signup.html")
-		// tmp.Execute(w, msg)
+
 	}
 
+}
+
+func MatchFace(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		fmt.Print("GET")
+		tmp, _ := template.ParseFiles("user/frontend/signup/matchface.html")
+		tmp.Execute(w, nil)
+		return
+	}
 }
