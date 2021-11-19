@@ -18,7 +18,7 @@ import (
 // 	}
 // }
 
-func insertUser(newUser models.User) {
+func insertStudent(newUser models.Student) {
 	// defer reviveProcess()
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	fmt.Println("Connection: " + conn)
@@ -44,7 +44,7 @@ func insertUser(newUser models.User) {
 
 }
 
-func checkUser(email string) bool {
+func isStudentExist(student models.Student) bool {
 	// defer reviveProcess()
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	fmt.Println(conn)
@@ -54,7 +54,7 @@ func checkUser(email string) bool {
 		panic(err)
 	}
 	defer db.Close()
-	query := fmt.Sprintf(`select exists(select 1 from students where email = '%s')`, email)
+	query := fmt.Sprintf(`select exists(select 1 from students where regnumber = '%s')`, student.Regnumber)
 	query = strings.TrimSpace(query)
 
 	result, err := db.Query(query)
@@ -71,7 +71,7 @@ func checkUser(email string) bool {
 	return exist
 }
 
-func validUser(user models.User) bool {
+func isValidStudent(user models.Student) bool {
 	// defer reviveProcess()
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 
@@ -80,14 +80,15 @@ func validUser(user models.User) bool {
 		panic(err)
 	}
 	defer db.Close()
-	query := fmt.Sprintf(`select password from students where email = '%s' limit 1`, user.Email)
+	query := fmt.Sprintf(`select password from students where regnumber = '%s' limit 1`, user.Regnumber)
 	query = strings.TrimSpace(query)
 	fmt.Println(query)
 	result, err := db.Query(query)
+
 	if err != nil {
 		panic(err)
 	}
-	var encryptedPassword []byte
+	var encryptedPassword string
 
 	for result.Next() {
 		err := result.Scan(&encryptedPassword)
@@ -102,7 +103,7 @@ func validUser(user models.User) bool {
 
 }
 
-func saveUserImageData(regnumber string, b64 string) bool {
+func saveStudentImageData(regnumber string, b64 string) bool {
 
 	dir := fmt.Sprintf("../database/%s/", regnumber)
 	err := os.Mkdir(dir, 0777)

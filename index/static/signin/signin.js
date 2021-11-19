@@ -1,4 +1,5 @@
 function sendRequest(obj){
+    
     xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function(){
         if(this.readyState == 4 && this.status == 200){
@@ -14,12 +15,20 @@ function sendRequest(obj){
 function submitForm(){
 
     let regnumber = document.querySelector("#rollno").value
-    let password = document.querySelectorAll("#password").value; 
+    let password = document.querySelector("#password").value; 
     let email = document.querySelector("#email").value; 
     let obj = JSON.stringify({
-       "password": password,
        "email": email,
-       "regnumber":regnumber
-    })
+       "regnumber":regnumber,
+       "password": password
+    });
+    console.log(obj);
     sendRequest(obj);
 }
+
+var btn = document.querySelector("#submitBtn");
+btn.addEventListener("click",submitForm);
+
+
+
+
