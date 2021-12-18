@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Document</title>
+        </head>
+        <body>
+            <form>
+                dept id <input type="text" id="departmentid">
+                <br>
+                course id<input type="text" id="courseid">
+                <br>
+                <button type="button" id="submitBtn">add</button>
+            </form>
+            <script src="/static/classroom/ts/dashboard.js"></script>
+            <table id="classrooms">
+
+                <caption>YOUR CLASSROOMS</caption>
+                <thead>
+                    <tr>
+                        <th>CLASSROOM ID</th>
+                        <th>DEPARTMENT ID</th>
+                        <th>COURSE ID</th>
+                        <th>SESSION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                        {{range .Todos}}
+                                <tr>
+                                    <td>{{.ClassroomId}}</td>
+                                    <td>{{.DepartmentId}}</td>
+                                    <td>{{.CourseId}}</td>
+                                    <td><button id="session" value = "{{.ClassroomId}}" onclick="location.href = 'teacher/dashboard/session'">start</button></td>
+                                </tr>
+                        {{end}}  
+                </tbody>        
+            </table>
+        </body> 
+</html>

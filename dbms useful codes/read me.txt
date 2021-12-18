@@ -1,0 +1,7 @@
+course_enrolled(deptid, courseid, regnumber)
+
+classroom_provided(classroom_id, regnumber)
+
+session_details(session_id,classroom_id ,date_of_class ,start_time, end_time)
+
+attendance(session_id, classroom_id, regnumber, att1, att2, att3)

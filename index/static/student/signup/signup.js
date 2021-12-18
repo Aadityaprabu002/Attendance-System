@@ -88,6 +88,20 @@ captureButton.addEventListener('click', () => {
 
 
 // form and ajax
+
+function sendRequest(obj){
+    xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(){
+        if(this.readyState == 4 && this.status == 200){
+            var result = JSON.parse(this.responseText);
+            document.querySelector("#response").innerHTML =  result.Response; 
+        }
+    }
+    xhr.open("POST","/signup");
+    xhr.setRequestHeader("content-type","application/json")
+    xhr.send(obj);
+}
+
 function submitForm(){
     if(!isFaceVisible){
         document.getElementById('response').innerHTML = 'Form can not be submitted since no face was detected!';
@@ -117,15 +131,3 @@ function submitForm(){
     sendRequest(obj);
 }
 
-function sendRequest(obj){
-    xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function(){
-        if(this.readyState == 4 && this.status == 200){
-            var result = JSON.parse(this.responseText);
-            document.querySelector("#response").innerHTML =  result.Response; 
-        }
-    }
-    xhr.open("POST","/signup");
-    xhr.setRequestHeader("content-type","application/json")
-    xhr.send(obj);
-}

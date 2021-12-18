@@ -4,22 +4,24 @@ function sendRequest(obj){
     xhr.onreadystatechange = function(){
         if(this.readyState == 4 && this.status == 200){
             var result = JSON.parse(this.responseText);
-            document.querySelector("#response").innerHTML =  result.Response; 
+            switch(result.Status){
+                case 0 : document.querySelector("#response").innerHTML =  result.Response; break;
+                case 1 : window.location.href = "/teacher/dashboard"; break;
+            }
         }
     }
-    xhr.open("POST","/signin");
+    xhr.open("POST","/teacher/signin");
     xhr.setRequestHeader("content-type","application/json")
     xhr.send(obj);
 }
 
 function submitForm(){
 
-    let regnumber = document.querySelector("#rollno").value
+    let teacherid = document.querySelector("#teacherid").value
     let password = document.querySelector("#password").value; 
-    let email = document.querySelector("#email").value; 
+
     let obj = JSON.stringify({
-       "email": email,
-       "regnumber":regnumber,
+       "teacherid": teacherid,
        "password": password
     });
     console.log(obj);

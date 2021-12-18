@@ -1,58 +1,50 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
-
-	"github.com/gorilla/mux"
 )
 
-func foo(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		tmp, _ := template.ParseFiles("dummy.html")
-		tmp.Execute(w, nil)
-		return
-	}
-
-	err := r.ParseMultipartForm(4096)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(r.FormValue("image"))
-	file, handler, err := r.FormFile("image")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Printf("Uploaded file:%+v\n", handler.Filename)
-	fmt.Printf("File size:%+v\n", handler.Size)
-	fmt.Printf("MIME header:%+v\n", handler.Header)
-
-	cur, _ := os.Getwd()
-	tempFile, err := ioutil.TempFile(cur, "upload-*.png")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer tempFile.Close()
-
-	fileBytes, err := ioutil.ReadAll(file)
-	if err != nil {
-		fmt.Println(err)
-	}
-	tempFile.Write(fileBytes)
-
-	w.Write([]byte("Success!"))
+type Todo struct {
+	Title string
+	Done  bool
 }
 
-func initRouter() {
-	r := mux.NewRouter()
-	r.HandleFunc("/", foo)
-	log.Fatal(http.ListenAndServe(":4040", r))
+type PageData struct {
+	PageTitle string
+	Todos     []Todo
 }
+
 func main() {
-	initRouter()
+
+	const tmpl = `<h1>{{.PageTitle}}</h1>
+    <ul>
+        {{range .Todos}}
+            {{if .Done}}
+                <li>{{.Title}}</li>
+            {{else}}
+                <li>{{.Title}}</li>
+            {{end}}
+        {{end}}
+    </ul>`
+
+	// Make and parse the HTML template
+	t, err := template.New("webpage").Parse(tmpl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Initialze a struct storing page data and todo data
+	data := PageData{
+		PageTitle: "My TODO list",
+		Todos: []Todo{
+			{Title: "Task 1", Done: false},
+			{Title: "Task 2", Done: true},
+			{Title: "Task 3", Done: true},
+		},
+	}
+
+	// Render the data and output using standard output
+	t.Execute(os.Stdout, data)
 }

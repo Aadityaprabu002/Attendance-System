@@ -1,0 +1,23 @@
+create table classrooms(
+	classroom_id varchar(15) not null,
+	
+	teacher_id character(10) not null,
+	
+	department_id varchar(10) not null,
+	
+	course_id varchar(10) not null,
+	
+	primary key(classroom_id, teacher_id),
+	
+ 	constraint fk_teachers_classrooms
+ 	foreign key(teacher_id) references teachers(teacher_id)
+ 	on delete cascade,
+	
+	constraint fk_departments_classrooms
+		foreign key(department_id) references departments(department_id)
+		on delete cascade,
+	
+	constraint fk_courses_classrooms
+		foreign key(course_id) references courses(course_id)
+		on delete cascade
+);

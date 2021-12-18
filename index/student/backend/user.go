@@ -1,36 +1,25 @@
-package users
+package student
 
 import (
+	key "attsys/env"
 	models "attsys/models"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
-	"os"
 
 	"github.com/gorilla/sessions"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-type htmlresponse struct {
-	Response string
+var store = sessions.NewCookieStore([]byte(key.GetSecretKey()))
+
+func IsLogged(r *http.Request) bool {
+	session, _ := store.Get(r, "student")
+	return !session.IsNew && session.Values["REG_NUMBER"] != nil
 }
-
-func GETSECRETKEY() string {
-
-	err := godotenv.Load("./env/safe.env")
-	if err != nil {
-		fmt.Println("Error Loading env file")
-		fmt.Println(err)
-	}
-	return os.Getenv("SECRET_KEY")
-}
-
-var store = sessions.NewCookieStore([]byte(GETSECRETKEY()))
-
 func Signin(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -44,8 +33,9 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("POST")
 		var params models.StudentSignin
 		err := json.NewDecoder(r.Body).Decode(&params)
-		msg := htmlresponse{
+		msg := models.Htmlresponse{
 			Response: "",
+			Status:   0,
 		}
 		if err == nil {
 			student := models.Student{
@@ -61,9 +51,11 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 					session, _ := store.Get(r, "student")
 					if session.IsNew {
 						session.Values["REG_NUMBER"] = student.Regnumber
+						session.Values["CLASSROOM_ID"] = nil
+						session.Values["JOINED_AT"] = nil
 						session.Options = &sessions.Options{
 							Path:     "/",
-							MaxAge:   10, // 9 hours session timing
+							MaxAge:   3600 * 9, // 9 hours session timing
 							HttpOnly: true,
 						}
 						err := session.Save(r, w)
@@ -71,14 +63,17 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 							fmt.Println(err)
 						}
 					}
-					fmt.Println(session.Values["REG_NUMBER"])
+					msg.Status = 1
 				} else {
 					msg.Response = "Invalid username or password!!"
+
 				}
 			} else {
 				msg.Response = "Invalid username or password!!"
+
 			}
 		}
+		fmt.Println(msg)
 		json.NewEncoder(w).Encode(msg)
 	}
 }
@@ -92,8 +87,9 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		fmt.Println("POST")
-		msg := htmlresponse{
+		msg := models.Htmlresponse{
 			Response: "",
+			Status:   0,
 		}
 		var params models.StudentSignup
 		err := json.NewDecoder(r.Body).Decode(&params)
@@ -111,15 +107,18 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 					if saveStudentImageData(newStudent.Regnumber, params.Image) {
 						insertStudent(newStudent)
 						msg.Response = "Successfully account created!"
+						msg.Status = 1
 					} else {
 						fmt.Println("Failed creating a record!")
 					}
 
 				} else {
 					msg.Response = "Email already exist!"
+
 				}
 			} else {
 				msg.Response = "Password not matching!"
+
 			}
 		}
 		json.NewEncoder(w).Encode(msg)
@@ -128,11 +127,24 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func Signout(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "student")
+	if err != nil {
+		fmt.Println(err)
+	}
+	session.Options.MaxAge = -1
+	session.Save(r, w)
+}
 func MatchFace(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		fmt.Print("GET")
 		tmp, _ := template.ParseFiles("student/frontend/signup/matchface.html")
 		tmp.Execute(w, nil)
+		session, err := store.Get(r, "student")
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(session.Values["REG_NUMBER"])
 		return
 	}
 }

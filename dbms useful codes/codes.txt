@@ -1,0 +1,24 @@
+create or replace function recordCount(tableName varchar)
+returns integer as $rows$
+declare
+	nR integer;
+	isExists bool;
+begin
+	
+	select exists(
+			select * 
+			from information_schema.tables
+			where
+				table_schema = 'public' and 
+				table_name = tableName
+	) into isExists;
+	
+	if isExists then
+		execute format('select count(*) from %s',tableName) into nR;
+	else	
+		select -1 into nR;
+	end if;	
+	return nR;
+end;
+$rows$
+language plpgsql;

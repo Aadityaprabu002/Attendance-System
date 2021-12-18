@@ -1,25 +1,17 @@
-package student
+package admin
 
 import (
 	connections "attsys/connections"
 	"attsys/models"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-// func reviveProcess() {
-// 	if r := recover(); r != nil {
-// 		fmt.Println("Process Revived!!")
-// 	}
-// }
+func insertTeacher(newTeacher models.Teacher) {
 
-func insertStudent(newUser models.Student) {
-	// defer reviveProcess()
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	fmt.Println("Connection: " + conn)
 	db, err := sql.Open("postgres", conn)
@@ -29,9 +21,9 @@ func insertStudent(newUser models.Student) {
 	defer db.Close()
 
 	query := fmt.Sprintf(`
-				Insert into students (email,firstname,lastname,password,regnumber)
-				values('%s','%s','%s','%s','%s') 
-				`, newUser.Email, newUser.Firstname, newUser.Lastname, newUser.Password, newUser.Regnumber)
+				Insert into teachers (email,firstname,lastname,password,teacher_id,department_id,course_id)
+				values('%s','%s','%s','%s','%s','%s','%s') 
+				`, newTeacher.Email, newTeacher.Firstname, newTeacher.Lastname, newTeacher.Password, newTeacher.TeacherId, newTeacher.DepartmentId, newTeacher.CourseId)
 
 	query = strings.TrimSpace(query)
 	fmt.Print(query)
@@ -44,8 +36,7 @@ func insertStudent(newUser models.Student) {
 
 }
 
-func isStudentExist(student models.Student) bool {
-	// defer reviveProcess()
+func IsTeacherExist(teacher models.Teacher) bool {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	fmt.Println(conn)
 	db, err := sql.Open("postgres", conn)
@@ -54,7 +45,7 @@ func isStudentExist(student models.Student) bool {
 		panic(err)
 	}
 	defer db.Close()
-	query := fmt.Sprintf(`select exists(select 1 from students where regnumber = '%s')`, student.Regnumber)
+	query := fmt.Sprintf(`select exists(select 1 from teachers where teacher_id = '%s')`, teacher.TeacherId)
 	query = strings.TrimSpace(query)
 
 	result, err := db.Query(query)
@@ -63,16 +54,15 @@ func isStudentExist(student models.Student) bool {
 		panic(err)
 	}
 
-	var exist bool
+	var teacheridExist bool
 	for result.Next() {
-		result.Scan(&exist)
+		result.Scan(&teacheridExist)
 	}
 
-	return exist
+	return teacheridExist
 }
 
-func isValidStudent(user models.Student) bool {
-	// defer reviveProcess()
+func IsValidTeacher(user models.Teacher) bool {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 
 	db, err := sql.Open("postgres", conn)
@@ -80,7 +70,7 @@ func isValidStudent(user models.Student) bool {
 		panic(err)
 	}
 	defer db.Close()
-	query := fmt.Sprintf(`select password from students where regnumber = '%s' limit 1`, user.Regnumber)
+	query := fmt.Sprintf(`select password from teachers where teacher_id = '%s' limit 1`, user.TeacherId)
 	query = strings.TrimSpace(query)
 	fmt.Println(query)
 	result, err := db.Query(query)
@@ -96,31 +86,10 @@ func isValidStudent(user models.Student) bool {
 			panic(err)
 		} else {
 			flag := bcrypt.CompareHashAndPassword([]byte(encryptedPassword), []byte(user.Password))
+			fmt.Println(flag)
 			return flag == nil
 		}
 	}
 	return false
 
-}
-
-func saveStudentImageData(regnumber string, b64 string) bool {
-
-	dir := fmt.Sprintf("../database/%s/", regnumber)
-	err := os.Mkdir(dir, 0777)
-	if err != nil {
-		fmt.Println("Failed creating directory for new student")
-	}
-
-	tempFile, err := ioutil.TempFile(dir, "*.txt")
-	if err != nil {
-		fmt.Println("Error creating user image file")
-		return false
-	}
-	defer tempFile.Close()
-	_, err = tempFile.Write([]byte(b64))
-	if err != nil {
-		fmt.Println("Error writing user image file")
-		return false
-	}
-	return true
 }
