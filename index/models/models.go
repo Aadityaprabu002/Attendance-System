@@ -58,7 +58,7 @@ type TeacherSignin struct {
 
 // classroom models
 type Classroom struct {
-	// TeacherId    string `json:"teacherid"`
+	TeacherId    string `json:"teacherid"`
 	ClassroomId  string `json:"classroomid"`
 	DepartmentId string `json:"departmentid"`
 	CourseId     string `json:"courseid"`
@@ -69,4 +69,10 @@ type Joinee struct {
 	Regnumber   string    `json:"regnumber"`
 	ClassroomId string    `json:"classroomid"`
 	JoiningTime time.Time `json:"joiningtime"`
+}
+
+type SessionDetails struct {
+	ClassroomId int       `json:"classroomid"`
+	Start_time  time.Time `json:"start_time"`
+	End_time    time.Time `json:"end_time"`
 }

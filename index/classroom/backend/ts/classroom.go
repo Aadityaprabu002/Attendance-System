@@ -9,8 +9,10 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
 
@@ -22,6 +24,9 @@ type ClassRoomDetails struct {
 
 type PageData struct {
 	Todos []models.Classroom
+}
+type HTMLSession struct {
+	SessionExist bool
 }
 
 var store = sessions.NewCookieStore([]byte(key.GetSecretKey()))
@@ -47,27 +52,6 @@ func CreateOrAppendClassRoom(TeacherId string, Classroom models.Classroom) bool 
 	return true
 }
 
-func ClassroomSession(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	session, err := store.Get(r, "teacher")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	if !session.IsNew {
-		if r.Method == "GET" {
-			fmt.Println("GET")
-			tmp, _ := template.ParseFiles("classroom/frontend/ts/session.html")
-			r.ParseForm()
-			ClassroomId := r.FormValue("ClassroomId")
-			fmt.Println(ClassroomId)
-			tmp.Execute(w, nil)
-		}
-	} else {
-		http.Redirect(w, r, "/teacher/signin", http.StatusSeeOther)
-	}
-
-}
 func Dashboard(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	session, err := store.Get(r, "teacher")
@@ -108,4 +92,84 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/teacher/signin", http.StatusSeeOther)
 	}
 
+}
+
+func ClassroomSessionRegister(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	session, err := store.Get(r, "teacher")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if !session.IsNew {
+		if r.Method == "GET" {
+			fmt.Println("GET")
+			tmp, _ := template.ParseFiles("classroom/frontend/ts/sessionRegister.html")
+			params := mux.Vars(r)
+			ClassroomId, _ := strconv.Atoi(params["ClassroomId"])
+			sessionExist := checkForSession(ClassroomId)
+
+			if sessionExist {
+				http.Redirect(w, r, "/teacher/dashboard/sessionDetails/", http.StatusSeeOther)
+			} else {
+				session.Values["ACTIVE_CLASSROOM"] = ClassroomId
+				session.Save(r, w)
+				f := HTMLSession{SessionExist: sessionExist}
+				tmp.Execute(w, f)
+			}
+		} else if r.Method == "POST" {
+			fmt.Println("POST")
+			msg := models.Htmlresponse{
+				Status:   0,
+				Response: "",
+			}
+			fmt.Println(session.Values["ACTIVE_CLASSROOM"].(int))
+			var params models.SessionDetails
+			err := json.NewDecoder(r.Body).Decode(&params)
+			params.ClassroomId = session.Values["ACTIVE_CLASSROOM"].(int)
+			fmt.Println(params)
+
+			if err != nil {
+				fmt.Println("Error obtaining post values!")
+				fmt.Println(err)
+			}
+			fmt.Println(params.Start_time)
+			fmt.Println(params.End_time)
+			if params.Start_time.After(params.End_time) {
+				msg.Response = "Start time greater than end time!"
+			} else {
+				if createUnqiueSession(params) {
+					msg.Status = 1 // java script redirect
+
+				} else {
+					msg.Response = "Error creating session!"
+				}
+			}
+			json.NewEncoder(w).Encode(msg)
+		}
+	} else {
+		http.Redirect(w, r, "/teacher/signin", http.StatusSeeOther)
+	}
+
+}
+
+func ClassroomSessionDetails(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	session, err := store.Get(r, "teacher")
+	if err != nil {
+		fmt.Println(err)
+	}
+	if !session.IsNew {
+		if r.Method == "GET" {
+			fmt.Println("GET")
+			tmp, _ := template.ParseFiles("classroom/frontend/ts/sessionDetails.html")
+			classroomid := fmt.Sprintf("%d", session.Values["ACTIVE_CLASSROOM"].(int))
+			res := models.Htmlresponse{
+				Response: classroomid,
+			}
+			tmp.Execute(w, res)
+		} else if r.Method == "POST" {
+			fmt.Println("POST")
+		}
+	}
 }

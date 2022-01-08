@@ -24,7 +24,10 @@ func initRouter() {
 	r.HandleFunc("/admin/teacher/signup", admin.TeacherSignup)
 	r.HandleFunc("/teacher/signin", teacher.Signin)
 	r.HandleFunc("/teacher/dashboard", teacher_classroom.Dashboard)
-	r.HandleFunc("/teacher/dashboard/session", teacher_classroom.ClassroomSession)
+
+	r.HandleFunc("/teacher/dashboard/sessionRegister/{ClassroomId}", teacher_classroom.ClassroomSessionRegister).Methods("GET")
+	r.HandleFunc("/teacher/dashboard/sessionRegister/", teacher_classroom.ClassroomSessionRegister).Methods("POST")
+	r.HandleFunc("/teacher/dashboard/sessionDetails/", teacher_classroom.ClassroomSessionDetails)
 	// r.HandleFunc("/matchface", student.MatchFace)
 	r.HandleFunc("/joinclassroom", classroom.JoinClassroom)
 	r.HandleFunc("/classroom", classroom.LoadClassroom)

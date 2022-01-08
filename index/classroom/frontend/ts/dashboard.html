@@ -23,6 +23,7 @@
                         <th>CLASSROOM ID</th>
                         <th>DEPARTMENT ID</th>
                         <th>COURSE ID</th>
+                       <!-- create status  -->
                         <th>SESSION</th>
                     </tr>
                 </thead>
@@ -32,7 +33,7 @@
                                     <td>{{.ClassroomId}}</td>
                                     <td>{{.DepartmentId}}</td>
                                     <td>{{.CourseId}}</td>
-                                    <td><button id="session" value = "{{.ClassroomId}}" onclick="location.href = 'teacher/dashboard/session'">start</button></td>
+                                    <td><button id="session" onclick= "location.href = '/teacher/dashboard/sessionRegister/'+'{{.ClassroomId}}'">OPEN</button></td>
                                 </tr>
                         {{end}}  
                 </tbody>        

@@ -1,0 +1,49 @@
+create table sessions(
+	session_id serial not null,
+	session_code varchar(20) not null unique,
+	session_date date not null,
+	start_time time without time zone not null,
+	end_time time without time zone not null,
+	classroom_id integer not null,
+	primary key(session_id,session_code,start_time,end_time,session_date),
+	foreign key(classroom_id) references classrooms(classroom_id)
+	on delete cascade
+)
+
+create table attendance(
+	classroom_id integer not null,
+	session_id integer not null,
+	regnumber character(10) not null,
+	date_of_attendance date not null,
+	join_time time without time zone not null,
+	attendance1 boolean not null,
+	attendance2 boolean not null,
+	attendance3 boolean not null,
+	primary key(classroom_id,session_id,regnumber,date_of_attendance,
+)
+
+create or replace function check_is_valid_student()
+returns trigger as 
+$body$
+declare 
+	student_row enrollement%rowtype
+	classroom_row classrooms%rowtype
+	
+begin	
+	
+	select * from classrooms into classroom_row where classroom_id = new.classroomid
+	select * from enrollement into student_row where regnumber = new.regnumber and department_id = classroom_row.department_id
+	and course_id = classroom_row.course_id;
+	if student_row.regnumber then
+		return new
+	else
+		raise 'INVALID STUDENT'
+	end if;
+end;
+$body$
+	
+	
+create trigger trigger_is_valid_student
+before insert 
+on attendance
+execute procedure check_is_valid_student;
