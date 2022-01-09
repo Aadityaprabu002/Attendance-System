@@ -11,19 +11,17 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
 
-type ClassRoomDetails struct {
-	ClassroomId  string
-	DepartmentId string
-	CourseId     string
-}
-
-type PageData struct {
+type ClassroomTableData struct {
 	Todos []models.Classroom
+}
+type SessionTableData struct {
+	Todos []models.PrettySession
 }
 type HTMLSession struct {
 	SessionExist bool
@@ -66,7 +64,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			fmt.Println("GET")
 			tmp, _ := template.ParseFiles("classroom/frontend/ts/dashboard.html")
-			data := PageData{
+			data := ClassroomTableData{
 				Todos: GetClassrooms(session.Values["TEACHER_ID"].(string)),
 			}
 			fmt.Println("list of classrooms:")
@@ -94,7 +92,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func ClassroomSessionRegister(w http.ResponseWriter, r *http.Request) {
+func ClassroomDashboard(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	session, err := store.Get(r, "teacher")
 	if err != nil {
@@ -104,19 +102,38 @@ func ClassroomSessionRegister(w http.ResponseWriter, r *http.Request) {
 	if !session.IsNew {
 		if r.Method == "GET" {
 			fmt.Println("GET")
-			tmp, _ := template.ParseFiles("classroom/frontend/ts/sessionRegister.html")
+			tmp, _ := template.ParseFiles("classroom/frontend/ts/classroomdashboard.html")
 			params := mux.Vars(r)
 			ClassroomId, _ := strconv.Atoi(params["ClassroomId"])
-			sessionExist := checkForSession(ClassroomId)
 
-			if sessionExist {
-				http.Redirect(w, r, "/teacher/dashboard/sessionDetails/", http.StatusSeeOther)
-			} else {
-				session.Values["ACTIVE_CLASSROOM"] = ClassroomId
-				session.Save(r, w)
-				f := HTMLSession{SessionExist: sessionExist}
-				tmp.Execute(w, f)
+			listOfSessions := getSessions(ClassroomId)
+
+			var temp models.PrettySession
+
+			var listOfPrettySessions []models.PrettySession
+
+			for _, v := range listOfSessions {
+				temp.SessionId = v.SessionId
+				temp.Date = v.Date.Format("2006-01-02")
+				temp.Start_time = v.Start_time.Format("15:04:05")
+				temp.End_time = v.End_time.Format("15:04:05")
+				temp.Status = v.Status
+				listOfPrettySessions = append(listOfPrettySessions, temp)
 			}
+
+			data := SessionTableData{
+				Todos: listOfPrettySessions,
+			}
+			tmp.Execute(w, data)
+
+			// if sessionExist {
+			// 	http.Redirect(w, r, "/teacher/dashboard/sessionDetails/", http.StatusSeeOther)
+			// } else {
+			// 	session.Values["ACTIVE_CLASSROOM"] = ClassroomId
+			// 	session.Save(r, w)
+			// 	f := HTMLSession{SessionExist: sessionExist}
+			// 	tmp.Execute(w, f)
+			// }
 		} else if r.Method == "POST" {
 			fmt.Println("POST")
 			msg := models.Htmlresponse{
@@ -124,7 +141,7 @@ func ClassroomSessionRegister(w http.ResponseWriter, r *http.Request) {
 				Response: "",
 			}
 			fmt.Println(session.Values["ACTIVE_CLASSROOM"].(int))
-			var params models.SessionDetails
+			var params models.Session
 			err := json.NewDecoder(r.Body).Decode(&params)
 			params.ClassroomId = session.Values["ACTIVE_CLASSROOM"].(int)
 			fmt.Println(params)
@@ -133,12 +150,15 @@ func ClassroomSessionRegister(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("Error obtaining post values!")
 				fmt.Println(err)
 			}
-			fmt.Println(params.Start_time)
-			fmt.Println(params.End_time)
 			if params.Start_time.After(params.End_time) {
 				msg.Response = "Start time greater than end time!"
+			} else if params.End_time.Sub(params.Start_time) > time.Duration(4)*time.Hour {
+				msg.Response = "Session time greater than 4 hours!"
 			} else {
-				if createUnqiueSession(params) {
+				status, sid := createUnqiueSession(params)
+				if status {
+					session.Values["ACTIVE_SESSION"] = sid
+					session.Save(r, w)
 					msg.Status = 1 // java script redirect
 
 				} else {
@@ -153,7 +173,7 @@ func ClassroomSessionRegister(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func ClassroomSessionDetails(w http.ResponseWriter, r *http.Request) {
+func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	session, err := store.Get(r, "teacher")
 	if err != nil {

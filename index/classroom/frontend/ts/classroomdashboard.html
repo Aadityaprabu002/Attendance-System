@@ -31,6 +31,30 @@
                         <td colspan="2" align="center"><p id ="response"></p></td>
                     </tr>
                 </table>
+                
+                <caption>YOUR SESSIONS</caption>
+                <table>
+                        <thead>
+                            <tr>
+                                <th>SESSION DATE</th>
+                                <th>START TIME</th>
+                                <th>END TIME</th>
+                                <th>STATUS</th>
+                                <th>DETAILS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                                {{range .Todos}}
+                                        <tr>
+                                            <td>{{.Date}}</td>
+                                            <td>{{.Start_time}}</td>
+                                            <td>{{.End_time}}</td>
+                                            <td>{{.Status}}</td>
+                                            <td><button id="session" onclick= "location.href = '/teacher/dashboard/classroomdashboard/sessiondashboard/{{.SessionId}}'">OPEN</button></td>
+                                        </tr>
+                                {{end}}  
+                        </tbody>        
+                </table>
     </form>
    
 

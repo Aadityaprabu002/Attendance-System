@@ -1,3 +1,4 @@
+const MAX_SESSION_HOUR = 4;
 function sendRequest(obj){
     
     xhr = new XMLHttpRequest();
@@ -24,11 +25,18 @@ function submitForm(){
     let et = document.querySelector("#end_time").value; 
     
     st = new Date(dt+" "+st);
-    console.log(st);
-    st.setTime(st.getTime() - st.getTimezoneOffset()*60*1000)
     et = new Date(dt+" "+et);
-    et.setTime(et.getTime() - et.getTimezoneOffset()*60*1000);
+    
+    if (st.getTime() > et.getTime()){
+        document.querySelector("#response").innerHTML = "Start time greater than end time!";
+        return;
+    }else if( et.getTime() - st.getTime() > MAX_SESSION_HOUR * 60 * 60 * 1000 ){
+        document.querySelector("#response").innerHTML = "Session time greater than 4 hours! javascript";
+        return;
+    }
 
+    st.setTime(st.getTime() - st.getTimezoneOffset()*60*1000)
+    et.setTime(et.getTime() - et.getTimezoneOffset()*60*1000);
     let obj = JSON.stringify({
        "start_time": st,
        "end_time": et
@@ -37,6 +45,7 @@ function submitForm(){
     console.log(obj);
     sendRequest(obj);
 }
+
 var btn = document.getElementById("submitBtn");
 btn.addEventListener("click",submitForm)
 

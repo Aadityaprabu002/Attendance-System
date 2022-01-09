@@ -71,8 +71,19 @@ type Joinee struct {
 	JoiningTime time.Time `json:"joiningtime"`
 }
 
-type SessionDetails struct {
+type Session struct {
 	ClassroomId int       `json:"classroomid"`
+	SessionId   int       `json:"sessionid"`
+	Date        time.Time `json:"date"`
 	Start_time  time.Time `json:"start_time"`
 	End_time    time.Time `json:"end_time"`
+	Status      string    `json:"status"`
+}
+
+type PrettySession struct {
+	SessionId  int
+	Date       string
+	Start_time string
+	End_time   string
+	Status     string
 }
