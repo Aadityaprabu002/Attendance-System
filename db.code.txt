@@ -10,17 +10,29 @@ create table sessions(
 	on delete cascade
 )
 
-create table attendance(
+create table attendance( 
 	classroom_id integer not null,
 	session_id integer not null,
 	regnumber character(10) not null,
-	date_of_attendance date not null,
-	join_time time without time zone not null,
-	attendance1 boolean not null,
-	attendance2 boolean not null,
-	attendance3 boolean not null,
-	primary key(classroom_id,session_id,regnumber,date_of_attendance,
+	attendance1 time without time zone ,
+	attendance2 time without time zone ,
+	attendance3 time without time zone ,
+	foreign key(session_id) references sessions(session_id),
+	foreign key(regnumber,classroom_id) references classroom_attendees(regnumber,classroom_id),
+	primary key(classroom_id,session_id,regnumber)
 )
+
+create table attendance_image_table(
+	classroom_id integer not null,
+	session_id integer not null,
+	regnumber character(10) not null,
+	attendance1_fp varchar(100),
+	attendance2_fp varchar(100),
+	attendance3_fp varchar(100),
+	foreign key(session_id) references sessions(session_id),
+	foreign key(regnumber,classroom_id) references classroom_attendees(regnumber,classroom_id),
+	primary key(classroom_id,session_id,regnumber)	
+);
 
 create or replace function check_is_valid_student()
 returns trigger as 
@@ -47,3 +59,72 @@ create trigger trigger_is_valid_student
 before insert 
 on attendance
 execute procedure check_is_valid_student;
+
+
+
+create table attendance( 
+	classroom_id integer not null,
+	session_id integer not null,
+	regnumber character(10) not null,
+	attendance1 time without time zone ,
+	attendance2 time without time zone ,
+	attendance3 time without time zone ,
+	foreign key(session_id) references sessions(session_id),
+	foreign key(regnumber,classroom_id) references classroom_attendees(regnumber,classroom_id),
+	primary key(classroom_id,session_id,regnumber)
+)
+
+create table attendance_image_table(
+	classroom_id integer not null,
+	session_id integer not null,
+	regnumber character(10) not null,
+	attendance1_fp varchar(100),
+	attendance2_fp varchar(100),
+	attendance3_fp varchar(100),
+	foreign key(session_id) references sessions(session_id),
+	foreign key(regnumber,classroom_id) references classroom_attendees(regnumber,classroom_id),
+	primary key(classroom_id,session_id,regnumber)	
+);
+select concat(Firstname,' ',Lastname) from teachers
+
+
+
+select d.department_name,c.course_name,concat(t.firstname,' ',t.lastname) as teachername,session_date,start_time,end_time,session_status 
+from (
+		select * from classrooms
+		inner join sessions
+		using(classroom_id)
+		where session_id = 17
+) as s1
+
+left join departments as d
+using (department_id)
+left join courses as c
+using (course_id)
+left join teachers as t
+using(teacher_id)
+
+
+select concat(firstname,' ',lastname) as studentname,regnumber, attendance1,attendance1_fp ,attendance2,attendance2_fp, attendance3,attendance3_fp  from (
+select * from attendance
+left join attendance_image_table
+using(session_id,regnumber,classroom_id)
+where session_id = 17) as s1
+left join students
+using(regnumber);
+
+			select d.department_name,c.course_name,concat(t.firstname,' ',t.lastname) as teachername,session_date,start_time,end_time,session_status,s2.department_id,s2.course_id as course_id from  
+			( 
+		
+				select * from classrooms
+				inner join sessions
+				using(classroom_id)
+				where session_id = 17
+			)as s
+			left join departments
+			using(department_id) as d
+			left join courses
+			using(course_id) as c
+			left join teachers
+			using (teacher_id) as t
+		

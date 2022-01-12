@@ -14,7 +14,6 @@
                 <br>
                 <button type="button" id="submitBtn">add</button>
             </form>
-            <script src="/static/classroom/ts/dashboard.js"></script>
             <table id="classrooms">
 
                 <caption>YOUR CLASSROOMS</caption>
@@ -33,10 +32,11 @@
                                     <td>{{.ClassroomId}}</td>
                                     <td>{{.DepartmentId}}</td>
                                     <td>{{.CourseId}}</td>
-                                    <td><button id="session" onclick= "location.href = '/teacher/dashboard/classroomdashboard/'+'{{.ClassroomId}}'">OPEN</button></td>
+                                    <td><button id="session" onclick= "window.location.href = '/teacher/dashboard/classroomdashboard/{{.ClassroomId}}'">OPEN</button></td>
                                 </tr>
                         {{end}}  
                 </tbody>        
             </table>
+            <script src="/static/classroom/ts/dashboard.js"></script>
         </body> 
 </html>

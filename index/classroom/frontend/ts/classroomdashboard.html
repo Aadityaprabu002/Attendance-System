@@ -30,9 +30,9 @@
                     <tr>
                         <td colspan="2" align="center"><p id ="response"></p></td>
                     </tr>
-                </table>
-                
-                <caption>YOUR SESSIONS</caption>
+                </table>  
+    </form>
+    <caption>YOUR SESSIONS</caption>
                 <table>
                         <thead>
                             <tr>
@@ -50,14 +50,12 @@
                                             <td>{{.Start_time}}</td>
                                             <td>{{.End_time}}</td>
                                             <td>{{.Status}}</td>
-                                            <td><button id="session" onclick= "location.href = '/teacher/dashboard/classroomdashboard/sessiondashboard/{{.SessionId}}'">OPEN</button></td>
+                                            <td><button id="session" onclick= "window.location.href += '/sessiondashboard/{{.SessionId}}'">OPEN</button></td>
                                         </tr>
                                 {{end}}  
                         </tbody>        
                 </table>
-    </form>
-   
 
-    <script src="/static/classroom/ts/sessionRegister.js"></script>
+    <script src="/static/classroom/ts/classroomdashboard.js"></script>
 </body>
 </html>

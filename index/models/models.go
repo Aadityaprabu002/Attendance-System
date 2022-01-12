@@ -66,9 +66,7 @@ type Classroom struct {
 
 //  joinee models
 type Joinee struct {
-	Regnumber   string    `json:"regnumber"`
-	ClassroomId string    `json:"classroomid"`
-	JoiningTime time.Time `json:"joiningtime"`
+	SessionKey string `json:"session_key"`
 }
 
 type Session struct {
@@ -86,4 +84,32 @@ type PrettySession struct {
 	Start_time string
 	End_time   string
 	Status     string
+}
+
+type StudentSessionDashBoard struct {
+	SessionDetails PrettySession
+	TeacherName    string
+	DepartmentName string
+	CourseName     string
+}
+
+type Attendance struct {
+	PrettyTime    string
+	ImageFilePath string
+}
+
+type AttendanceDetails struct {
+	StudentName string
+	Regnumber   string
+	Attendance1 Attendance
+	Attendance2 Attendance
+	Attendance3 Attendance
+}
+
+type TeacherSessionDashBoard struct {
+	SessionDetails PrettySession
+	TeacherName    string
+	DepartmentName string
+	CourseName     string
+	Attendees      []AttendanceDetails
 }

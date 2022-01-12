@@ -5,10 +5,61 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+        }
+    </style>
 </head>
 <body>
     hi welcome to this session for the classroom:
-    {{.Response}}
-    <!-- <script src="/static/classroom/ts/sessions.js"></script> -->
+    <table >
+            <caption>Session Details</caption>
+            <thead>
+                <tr>
+                    <th>Department</th>
+                    <th>Course</th>
+                    <th>Handled By</th>
+                    <th>Session Date</th>
+                    <th>Start time</th>
+                    <th>End time</th>
+                    <th>Status</th>
+                    <!-- Implement a timer popup -->
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{.DepartmentName}}</td>
+                    <td>{{.CourseName}}</td>
+                    <td>{{.TeacherName}}</td>
+                    <td>{{.SessionDetails.Date}}</td>
+                    <td>{{.SessionDetails.Start_time}}</td>
+                    <td>{{.SessionDetails.End_time}}</td>
+                    <td>{{.SessionDetails.Status}}</td>
+                </tr>
+            </tbody>
+    </table>
+
+    <table>
+        <caption>Student Attendance</caption>
+        <thead>
+            <th>Student Name</th>
+            <th>Register Number</th>
+            <th>Attendance 1</th>
+            <th>Attendance 2</th>
+            <th>Attendance 3</th>
+        </thead>
+        <tbody>
+            {{range .AttendeesList}}
+            <td>{{.StudentName}}</td>
+            <td>{{.Regnumber}}</td>
+            <td><img src="{{.Attendance1.ImageFilePath}}" alt="N/A" height="100" width="120"></td>
+            <td><img src="{{.Attendance2.ImageFilePath}}" alt="N/A" height="100" width="120"></td>
+            <td><img src="{{.Attendance3.ImageFilePath}}" alt="N/A" height="100" width="120"></td>
+            {{end}}
+        </tbody>
+    </table>
+    <script src="/static/classroom/ts/sessiondashboard.js"></script>
 </body>
 </html>

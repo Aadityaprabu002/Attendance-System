@@ -2,7 +2,7 @@ package main
 
 import (
 	admin "attsys/admin/backend"
-	classroom "attsys/classroom/backend/ss"
+	student_classroom "attsys/classroom/backend/ss"
 	teacher_classroom "attsys/classroom/backend/ts"
 	home "attsys/home/backend"
 	student "attsys/student/backend"
@@ -24,13 +24,10 @@ func initRouter() {
 	r.HandleFunc("/admin/teacher/signup", admin.TeacherSignup)
 	r.HandleFunc("/teacher/signin", teacher.Signin)
 	r.HandleFunc("/teacher/dashboard", teacher_classroom.Dashboard)
-
-	r.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}", teacher_classroom.ClassroomDashboard).Methods("GET")
-	r.HandleFunc("/teacher/dashboard/classroomdashboard/", teacher_classroom.ClassroomDashboard).Methods("POST")
-	r.HandleFunc("/teacher/dashboard/classroomdashboard/sessiondashboard/", teacher_classroom.SessionDashboard).Methods("GET")
-	// r.HandleFunc("/matchface", student.MatchFace)
-	r.HandleFunc("/joinclassroom", classroom.JoinClassroom)
-	r.HandleFunc("/classroom", classroom.LoadClassroom)
+	r.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}", teacher_classroom.ClassroomDashboard)
+	r.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}/sessiondashboard/{SessionId}", teacher_classroom.SessionDashboard)
+	r.HandleFunc("/student/dashboard", student_classroom.Dashboard)
+	r.HandleFunc("/student/dashboard/session", student_classroom.SessionDashboard)
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
 

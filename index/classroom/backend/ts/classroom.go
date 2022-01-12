@@ -104,10 +104,19 @@ func ClassroomDashboard(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("GET")
 			tmp, _ := template.ParseFiles("classroom/frontend/ts/classroomdashboard.html")
 			params := mux.Vars(r)
-			ClassroomId, _ := strconv.Atoi(params["ClassroomId"])
-
+			ClassroomId, err := strconv.Atoi(params["ClassroomId"])
+			if err != nil {
+				fmt.Println("bad code for ClassroomId")
+				http.Redirect(w, r, "/teacher/dashboard", http.StatusSeeOther)
+			}
+			TeacherId := session.Values["TEACHER_ID"].(string)
+			if !isAuthenticClassroom(TeacherId, ClassroomId) {
+				fmt.Println("Invalid ClassroomId for the logged teacher")
+				http.Redirect(w, r, "/teacher/dashboard", http.StatusSeeOther)
+			}
 			listOfSessions := getSessions(ClassroomId)
-
+			session.Values["ACTIVE_CLASSROOM"] = ClassroomId
+			session.Save(r, w)
 			var temp models.PrettySession
 
 			var listOfPrettySessions []models.PrettySession
@@ -126,24 +135,27 @@ func ClassroomDashboard(w http.ResponseWriter, r *http.Request) {
 			}
 			tmp.Execute(w, data)
 
-			// if sessionExist {
-			// 	http.Redirect(w, r, "/teacher/dashboard/sessionDetails/", http.StatusSeeOther)
-			// } else {
-			// 	session.Values["ACTIVE_CLASSROOM"] = ClassroomId
-			// 	session.Save(r, w)
-			// 	f := HTMLSession{SessionExist: sessionExist}
-			// 	tmp.Execute(w, f)
-			// }
 		} else if r.Method == "POST" {
 			fmt.Println("POST")
+			temp := mux.Vars(r)
+			ClassroomId, err := strconv.Atoi(temp["ClassroomId"])
+			if err != nil {
+				fmt.Println("bad code for ClassroomId")
+				http.Redirect(w, r, "/teacher/dashboard", http.StatusSeeOther)
+			}
+
 			msg := models.Htmlresponse{
 				Status:   0,
 				Response: "",
 			}
-			fmt.Println(session.Values["ACTIVE_CLASSROOM"].(int))
 			var params models.Session
-			err := json.NewDecoder(r.Body).Decode(&params)
-			params.ClassroomId = session.Values["ACTIVE_CLASSROOM"].(int)
+			err = json.NewDecoder(r.Body).Decode(&params)
+			if err != nil {
+				fmt.Println("Error decoding post parameters")
+				fmt.Println(err)
+
+			}
+			params.ClassroomId = ClassroomId
 			fmt.Println(params)
 
 			if err != nil {
@@ -155,11 +167,10 @@ func ClassroomDashboard(w http.ResponseWriter, r *http.Request) {
 			} else if params.End_time.Sub(params.Start_time) > time.Duration(4)*time.Hour {
 				msg.Response = "Session time greater than 4 hours!"
 			} else {
-				status, sid := createUnqiueSession(params)
+				status, _ := createUnqiueSession(params)
 				if status {
-					session.Values["ACTIVE_SESSION"] = sid
-					session.Save(r, w)
-					msg.Status = 1 // java script redirect
+
+					msg.Status = 1 // java script reload page
 
 				} else {
 					msg.Response = "Error creating session!"
@@ -182,13 +193,29 @@ func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 	if !session.IsNew {
 		if r.Method == "GET" {
 			fmt.Println("GET")
-			tmp, _ := template.ParseFiles("classroom/frontend/ts/sessionDetails.html")
-			classroomid := fmt.Sprintf("%d", session.Values["ACTIVE_CLASSROOM"].(int))
-			res := models.Htmlresponse{
-				Response: classroomid,
+			params := mux.Vars(r)
+			ClassroomId, err := strconv.Atoi(params["ClassroomId"])
+			if err != nil {
+				fmt.Println("bad code for ClassroomId")
+				http.Redirect(w, r, "/teacher/dashboard", http.StatusSeeOther)
 			}
-			tmp.Execute(w, res)
+			SessionId, err := strconv.Atoi(params["SessionId"])
+			if err != nil {
+				fmt.Println("Bad code for SessionId")
+				http.Redirect(w, r, "/teacher/dashboard", http.StatusSeeOther)
+			}
+			TeacherId := session.Values["TEACHER_ID"].(string)
+			if !isAuthenticSession(TeacherId, ClassroomId, SessionId) {
+				fmt.Println("Invalid classroomId or sessionId for the logged teacher")
+				http.Redirect(w, r, "/teacher/dashboard", http.StatusSeeOther)
+			}
+			TeacherSessionDetails := GetSessionDetails(SessionId)
+			fmt.Println(TeacherSessionDetails)
+			tmp, _ := template.ParseFiles("classroom/frontend/ts/sessiondashboard.html")
+			tmp.Execute(w, TeacherSessionDetails)
+
 		} else if r.Method == "POST" {
+
 			fmt.Println("POST")
 		}
 	}

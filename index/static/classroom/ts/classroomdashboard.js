@@ -7,11 +7,11 @@ function sendRequest(obj){
             var result = JSON.parse(this.responseText);
             switch(result.Status){
                 case 0 : document.querySelector("#response").innerHTML =  result.Response; break;
-                case 1 : window.location.href = "/teacher/dashboard/sessionDetails/"; break;
+                case 1 : window.location.reload(); break;
             }
         }
     }
-    xhr.open("POST","/teacher/dashboard/sessionRegister/");
+    xhr.open("POST",window.location.href);
     xhr.setRequestHeader("content-type","application/json")
     xhr.send(obj);
 }

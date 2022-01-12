@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <caption>SESSION DETAILS</caption>
+                <table>
+                        <thead>
+                            <tr>
+                                <th>TEACHER NAME</th>
+                                <th>DEPARTMENT NAME</th>
+                                <th>COURSE NAME</th>
+                                <th>SESSION DATE</th>
+                                <th>START TIME</th>
+                                <th>END TIME</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                                <tr>
+                                    <td>{{.TeacherName}}</td>
+                                    <td>{{.DepartmentName}}</td>
+                                    <td>{{.CourseName}}</td>
+                                    <td>{{.SessionDetails.Date}}</td>
+                                    <td>{{.SessionDetails.Start_time}}</td>
+                                    <td>{{.SessionDetails.End_time}}</td>
+                                    <td>{{.SessionDetails.Status}}</td>
+                                </tr>
+                        </tbody>        
+                </table>
+            <div id="reponse"></div>
+            <script src="/static/classroom/ss/sessiondashboard.js"></script>
+</body>
+</html>

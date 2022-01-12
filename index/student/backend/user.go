@@ -51,8 +51,6 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 					session, _ := store.Get(r, "student")
 					if session.IsNew {
 						session.Values["REG_NUMBER"] = student.Regnumber
-						session.Values["CLASSROOM_ID"] = nil
-						session.Values["JOINED_AT"] = nil
 						session.Options = &sessions.Options{
 							Path:     "/",
 							MaxAge:   3600 * 9, // 9 hours session timing
