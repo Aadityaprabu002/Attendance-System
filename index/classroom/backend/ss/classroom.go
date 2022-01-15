@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"text/template"
-	"time"
 
 	"github.com/gorilla/sessions"
 )
@@ -45,9 +44,11 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 				Regnumber := session.Values["REG_NUMBER"].(string)
 				if IsStudentBelongsToClassroom(Regnumber, SessionId) {
 					session.Values["SESSION_ID"] = SessionId
-					EndTime := GetSessionEndTime(SessionId).String()
+
+					StartTime, EndTime := GetSessionTimings(SessionId)
 					fmt.Println(EndTime)
-					session.Values["SESSION_END_TIME"] = EndTime
+					session.Values["SESSION_START_TIME"] = StartTime.String()
+					session.Values["SESSION_END_TIME"] = EndTime.String()
 					fmt.Println(session.Save(r, w))
 
 					msg.Status = 1
@@ -79,6 +80,7 @@ func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 	if session.Values["SESSION_ID"] != nil {
 		if r.Method == "GET" {
 			SessionId := session.Values["SESSION_ID"].(int)
+
 			StudentSessionDetails, _ := GetSessionDetails(SessionId)
 			tmp, _ := template.ParseFiles("classroom/frontend/ss/sessiondashboard.html")
 			tmp.Execute(w, StudentSessionDetails)
@@ -88,7 +90,7 @@ func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 				Response: "",
 				Status:   0,
 			}
-			status := IsSessionActive(SessionId)
+			status := GetSessionStatus(SessionId)
 			fmt.Println("Session Status:", status)
 			switch status {
 			case "CLOSED":
@@ -99,24 +101,22 @@ func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 				msg.Response = "Session has been closed!"
 
 			case "ACTIVE":
-				fmt.Println(session.Values["SESSION_END_TIME"].(string))
-				layout := "2006-01-02 15:04:05 -0700 MST"
-				EndTime, _ := time.Parse(layout, session.Values["SESSION_END_TIME"].(string))
-				CurrentTimeStr := "0000-01-01 " + time.Now().Format("15:04:05") + " +0000 UTC"
-				CurrentTime, _ := time.Parse(layout, CurrentTimeStr)
-
-				fmt.Println(EndTime, CurrentTime)
+				// fmt.Println(session.Values["SESSION_END_TIME"].(string))
+				// layout := "2006-01-02 15:04:05 -0700 MST"
+				// EndTime, _ := time.Parse(layout, session.Values["SESSION_END_TIME"].(string))
+				// CurrentTimeStr := "0000-01-01 " + time.Now().Format("15:04:05") + " +0000 UTC"
+				// CurrentTime, _ := time.Parse(layout, CurrentTimeStr)
+				// fmt.Println(EndTime, CurrentTime)
 				msg.Status = 1
-				msg.Response = GetSessionTimer(CurrentTime, EndTime)
-				fmt.Println(msg.Response)
+				msg.Response = "Session is Active!!"
 
 			case "WAITING":
 				msg.Status = 0
 				msg.Response = "Session not yet opened!"
 
 			default:
-				session.Values["SESSION_ID"] = nil
-				session.Values["SESSION_END_TIME"] = nil
+				// session.Values["SESSION_ID"] = nil
+				// session.Values["SESSION_END_TIME"] = nil
 				session.Save(r, w)
 				msg.Status = -1
 				msg.Response = "Error!!! Failed to retrieve session status!"
@@ -128,4 +128,47 @@ func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/student/dashboard", http.StatusSeeOther)
 	}
 
+}
+func SessionDetails(w http.ResponseWriter, r *http.Request) {
+	if student.IsLogged(r) {
+		if r.Method == "GET" {
+			session, _ := store.Get(r, "student")
+			SessionId := session.Values["SESSION_ID"].(int)
+			StartTime, EndTime := GetSessionTimings(SessionId)
+			PopUp1, PopUp2, PopUp3 := GetPopUpTimings(SessionId)
+			res := models.StudentSessionTimerDetails{
+				StartTime: StartTime,
+				EndTime:   EndTime,
+				PopUp1:    PopUp1,
+				PopUp2:    PopUp2,
+				PopUp3:    PopUp3,
+			}
+			json.NewEncoder(w).Encode(res)
+		}
+	}
+}
+
+func PostAttendance(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		if student.IsLogged(r) {
+			session, _ := store.Get(r, "student")
+			SessionId := session.Values["SESSION_ID"].(int)
+			Regnumber := session.Values["REG_NUMBER"].(string)
+			if status := GetSessionStatus(SessionId); status == "ACTIVE" {
+				params := models.PostAttendance{}
+				json.NewDecoder(r.Body).Decode(&params)
+				res := models.Htmlresponse{
+					Status:   0,
+					Response: "",
+				}
+				if InsertAttendance(Regnumber, SessionId, params) {
+					res.Status = 1
+					res.Response = "Attendance Posted Successfull!"
+				} else {
+					res.Response = "Fail to post attendance!"
+				}
+				json.NewEncoder(w).Encode(res)
+			}
+		}
+	}
 }

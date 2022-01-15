@@ -21,10 +21,9 @@ import (
 func insertStudent(newUser models.Student) {
 	// defer reviveProcess()
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
-	fmt.Println("Connection: " + conn)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
-		panic("failed to establish connection with sql")
+		fmt.Println("failed to establish connection with sql")
 	}
 	defer db.Close()
 

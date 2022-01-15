@@ -113,3 +113,17 @@ type TeacherSessionDashBoard struct {
 	CourseName     string
 	Attendees      []AttendanceDetails
 }
+
+type StudentSessionTimerDetails struct {
+	StartTime time.Time
+	EndTime   time.Time
+	PopUp1    time.Time
+	PopUp2    time.Time
+	PopUp3    time.Time
+}
+
+type PostAttendance struct {
+	AttNum int       `json:"attendance_number"`
+	Time   time.Time `json:"attendance_time"`
+	Image  string    `json:"image64"`
+}

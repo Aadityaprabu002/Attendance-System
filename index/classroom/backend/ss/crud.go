@@ -3,8 +3,12 @@ package classroom
 import (
 	connections "attsys/connections"
 	"attsys/models"
+	"bytes"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
+	"image/png"
+	"os"
 	"strings"
 	"time"
 )
@@ -134,7 +138,7 @@ func GetSessionDetails(SessionId int) (models.StudentSessionDashBoard, bool) {
 	return data, true
 }
 
-func IsSessionActive(SessionId int) string {
+func GetSessionStatus(SessionId int) string {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
@@ -156,26 +160,103 @@ func IsSessionActive(SessionId int) string {
 	return status
 }
 
-func GetSessionEndTime(SessionId int) time.Time {
+func GetSessionTimings(SessionId int) (time.Time, time.Time) {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	db, err := sql.Open("postgres", conn)
+	var StartTime time.Time
 	var EndTime time.Time
 	if err != nil {
 		fmt.Println("failed to establish connection with sql")
-		return EndTime
+		return StartTime, EndTime
 	}
 	defer db.Close()
-	query := fmt.Sprintf(`select end_time from sessions where session_id = %d`, SessionId)
+
+	query := fmt.Sprintf(`select start_time,end_time from sessions where session_id = %d`, SessionId)
 	result, _ := db.Query(query)
 	for result.Next() {
-		result.Scan(&EndTime)
+		result.Scan(&StartTime, &EndTime)
 	}
-	return EndTime
+	return StartTime, EndTime
 }
-func GetSessionTimer(CurrentTime time.Time, EndTime time.Time) string {
-	diff := EndTime.Sub(CurrentTime)
-	Hours := int(diff.Seconds()) / 3600
-	Minutes := int(diff.Seconds()) / 60
-	Seconds := int(diff.Seconds()) % 60
-	return fmt.Sprintf("%d-%d-%d", Hours, Minutes, Seconds)
+
+func GetPopUpTimings(SessionId int) (time.Time, time.Time, time.Time) {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	var PopUp1 time.Time
+	var PopUp2 time.Time
+	var PopUp3 time.Time
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+		return PopUp1, PopUp2, PopUp3
+	}
+	defer db.Close()
+	query := fmt.Sprintf("select popup1,popup2,popup3 from keygen where session_id = %d", SessionId)
+	result, _ := db.Query(query)
+	for result.Next() {
+		result.Scan(&PopUp1, &PopUp2, &PopUp3)
+	}
+	return PopUp1, PopUp2, PopUp3
+}
+
+func saveSessionStudentImageData(Regnumber string, SessionId int, ImageData string, ImageDataNumber int) string {
+	fpath := fmt.Sprintf("../database/sessions/%d/%s/", SessionId, Regnumber)
+	_ = os.MkdirAll(fpath, 0777)
+	DecodedImageData, err := base64.StdEncoding.DecodeString(ImageData)
+	if err != nil {
+		fmt.Println("Bad base 64 string!")
+		return ""
+	}
+	ImgReader := bytes.NewReader(DecodedImageData)
+	Image, err := png.Decode(ImgReader)
+	if err != nil {
+		fmt.Println("Bad image")
+		return ""
+	}
+	ImagePath := fmt.Sprintf("%sattendance%d.png", fpath, ImageDataNumber)
+	ImageFile, err := os.OpenFile(ImagePath, os.O_WRONLY|os.O_CREATE, 0777)
+	if err != nil {
+		fmt.Println("Cannot open file")
+		return ""
+	}
+	png.Encode(ImageFile, Image)
+	return ImagePath
+
+}
+
+func InsertAttendance(Regnumber string, SessionId int, att models.PostAttendance) bool {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+		return false
+	}
+	defer db.Close()
+
+	attcolumns := [...]string{"attendance1", "attendance2", "attendance3"}
+	query := fmt.Sprintf(`
+		update table attendance
+		set %s = '%s'
+		where regnumber = '%s'
+	`, attcolumns[att.AttNum], att.Time, Regnumber)
+	_, err = db.Query(query)
+	if err != nil {
+		fmt.Println("Error accepting attendance!")
+		fmt.Println(err)
+		return false
+	}
+
+	ImagePath := saveSessionStudentImageData(Regnumber, SessionId, att.Image, att.AttNum)
+	attcolumns = [...]string{"attendance1_fp", "attendance2_fp", "attendance3_fp"}
+	query = fmt.Sprintf(`
+		update table attendance_image_table
+		set %s = '%s'
+		where regnumber = '%s'
+	`, attcolumns[att.AttNum], ImagePath, Regnumber)
+	_, err = db.Query(query)
+	if err != nil {
+		fmt.Println("Error accepting attendance!")
+		fmt.Println(err)
+		return false
+	}
+	return true
 }

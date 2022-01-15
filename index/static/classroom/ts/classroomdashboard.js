@@ -1,4 +1,5 @@
 const MAX_SESSION_HOUR = 4;
+const MIN_SESSION_MINUTE = 20
 function sendRequest(obj){
     
     xhr = new XMLHttpRequest();
@@ -28,10 +29,13 @@ function submitForm(){
     et = new Date(dt+" "+et);
     
     if (st.getTime() > et.getTime()){
-        document.querySelector("#response").innerHTML = "Start time greater than end time!";
+        document.querySelector("#response").innerHTML = "Start time greater than end time! javascript";
         return;
     }else if( et.getTime() - st.getTime() > MAX_SESSION_HOUR * 60 * 60 * 1000 ){
         document.querySelector("#response").innerHTML = "Session time greater than 4 hours! javascript";
+        return;
+    }else if( et.getTime() - st.getTime() < MIN_SESSION_MINUTE * 60 * 1000){
+        document.querySelector("#response").innerHTML = "Session time less than 20 minutes! javascript";
         return;
     }
 

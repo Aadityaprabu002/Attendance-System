@@ -25,6 +25,9 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	// defer reviveProcess()
 	if r.Method == "GET" {
+		if IsLogged(r) {
+			http.Redirect(w, r, "/student/dashboard", http.StatusSeeOther)
+		}
 		fmt.Println("GET")
 		tmp, _ := template.ParseFiles("student/frontend/signin/signin.html")
 		tmp.Execute(w, nil)
@@ -53,7 +56,7 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 						session.Values["REG_NUMBER"] = student.Regnumber
 						session.Options = &sessions.Options{
 							Path:     "/",
-							MaxAge:   3600 * 9, // 9 hours session timing
+							MaxAge:   3600 * 8, // 8 hours session timing
 							HttpOnly: true,
 						}
 						err := session.Save(r, w)

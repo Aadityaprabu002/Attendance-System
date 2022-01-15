@@ -164,8 +164,11 @@ func ClassroomDashboard(w http.ResponseWriter, r *http.Request) {
 			}
 			if params.Start_time.After(params.End_time) {
 				msg.Response = "Start time greater than end time!"
-			} else if params.End_time.Sub(params.Start_time) > time.Duration(4)*time.Hour {
+			} else if params.End_time.Sub(params.Start_time) > time.Duration(4*time.Hour) {
 				msg.Response = "Session time greater than 4 hours!"
+
+			} else if params.End_time.Sub(params.Start_time) < time.Duration(20*time.Minute) {
+				msg.Response = "Session time less than 20 minutes!"
 			} else {
 				status, _ := createUnqiueSession(params)
 				if status {

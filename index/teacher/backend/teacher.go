@@ -46,7 +46,7 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 						session.Values["TEACHER_ID"] = teacher.TeacherId
 						session.Options = &sessions.Options{
 							Path:     "/",
-							MaxAge:   3600, // 1 hours session timing
+							MaxAge:   3600 * 4, // 4 hours session timing
 							HttpOnly: true,
 						}
 						err := session.Save(r, w)

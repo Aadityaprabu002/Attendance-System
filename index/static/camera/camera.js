@@ -1,9 +1,20 @@
+/*
+    Needed tags
+    <video id="player" controls autoplay></video>
+    <button type="button" value = "0" id="capture" >Capture</button>
+    <div id="face-detection"></div>
+    <canvas id="canvas" width=320 height=240></canvas>
+*/
+
+
+
 
 
 //face detection
 var canSet = false; // bool to set isFaceVisible
 var isFaceVisible = false; // bool to detect face
-
+var modelsLoaded = false; // bool to detect whether models have loaded
+var cameraLoaded = false; // bool to see whether camera loaded or not
 Promise.all(
     [
         faceapi.nets.tinyFaceDetector.loadFromUri('/static/student/signup/models'),
@@ -11,7 +22,11 @@ Promise.all(
         faceapi.nets.faceRecognitionNet.loadFromUri('/static/student/signup/models'),
         faceapi.nets.faceExpressionNet.loadFromUri('/static/student/signup/models')
     ]
-).then(startVideo);
+).then(
+    function(){
+        modelsLoaded = true;
+    }
+);
 
 
 // video 
@@ -87,46 +102,39 @@ captureButton.addEventListener('click', () => {
 });
 
 
-// form and ajax
-function sendRequest(obj){
-    xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function(){
-        if(this.readyState == 4 && this.status == 200){
-            var result = JSON.parse(this.responseText);
-            document.querySelector("#response").innerHTML =  result.Response; 
-        }
-    }
-    xhr.open("POST",window.location.href);
-    xhr.setRequestHeader("content-type","application/json")
-    xhr.send(obj);
+function loadCamera(e){
+    let video = document.createElement("video");
+        video.setAttribute("id","player");
+        video.setAttribute("controls",false)
+        video.setAttribute("autoplay",true);
+
+    let button = document.createElement("button");
+        button.setAttribute("id","capture");
+        button.setAttribute("value","0");
+        button.setAttribute("type","button");
+        button.innerHTML = "CAPTURE";
+
+    let div = document.createElement("div");
+        div.setAttribute("id","face-detection");
+
+    let canvas = document.createElement("canvas");
+        canvas.setAttribute("id",canvas); 
+        canvas.width = 320;
+        canvas.height = 240;
+    
+    let parent = document.createElement("div");
+    parent.appendChild(video);
+    parent.appendChild(button);
+    parent.appendChild(div);
+    parent.appendChild(canvas);
+
+    e.appendChild(parent);
+    cameraLoaded = true;
+    return parent;
+
 }
 
-function submitForm(){
-    if(!isFaceVisible){
-        document.getElementById('response').innerHTML = 'Form can not be submitted since no face was detected!';
-        return;
-    }
-    let image64 = document.getElementById("canvas").toDataURL('image/png');
-    let fname = document.querySelector("#fname").value;
-    let lname = document.querySelector("#lname").value;
-    let regnumber = document.querySelector("#rollno").value
-    let p = document.querySelectorAll("#password"); 
-    let password = [];
-    for(let i=0;i<p.length;i++){
-        password[i] = p[i].value;
-    }
-    let email = document.querySelector("#email").value; 
-
-    let obj = JSON.stringify({
-       "firstname": fname,
-       "lastname": lname,
-       "password": password,
-       "email": email,
-       "image64":image64,
-       "regnumber":regnumber
-    })
-
-    console.log(obj);
-    sendRequest(obj);
+function unloadCamera(camera){
+    cameraLoaded = false;
+    document.removeChild(camera);
 }
-

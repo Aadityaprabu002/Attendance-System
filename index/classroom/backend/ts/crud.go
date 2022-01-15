@@ -4,12 +4,31 @@ import (
 	connections "attsys/connections"
 	keygen "attsys/keygen"
 	"attsys/models"
+	"math"
+
 	"database/sql"
 	"fmt"
+	"math/rand"
 	"strings"
 	"time"
 )
 
+func randRange(min int, max int) int {
+	rand.Seed(time.Now().UTC().UnixNano())
+	return min + rand.Intn(max+1-min)
+}
+func GetPopUpTimings(StartTime time.Time, EndTime time.Time) (time.Time, time.Time, time.Time) {
+	diff := EndTime.Sub(StartTime)
+	Minutes := int(diff.Minutes())
+	Interval := Minutes / 3
+	var MultiplicationFactor = randRange(3, int(math.Max(3, float64(Interval-3))))
+	popAt := time.Duration(int(time.Minute) * MultiplicationFactor)
+	firstPopUp := StartTime.Add(popAt)
+	secondPopUp := StartTime.Add(time.Duration(int(time.Minute)*Interval) + popAt)
+	thirdPopUp := StartTime.Add(time.Duration(int(time.Minute)*Interval*2) + popAt)
+	return firstPopUp, secondPopUp, thirdPopUp
+
+}
 func IsClassRoomExist(ClassroomId string) bool {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	db, err := sql.Open("postgres", conn)
@@ -90,19 +109,11 @@ func createUnqiueSession(newSession models.Session) (bool, int) {
 	justNow := time.Now()
 	sessionUniqueCode := fmt.Sprintf("%s%d%d%d", keygen.String(5), justNow.Hour(), justNow.Minute(), justNow.Second())
 	fmt.Println(sessionUniqueCode)
-	query := fmt.Sprintf("insert into sessions(session_date,start_time,end_time,classroom_id) values ('%s','%s','%s',%d);", newSession.End_time.Format("2006-01-02"), newSession.Start_time.Format("15:04:05"), newSession.End_time.Format("15:04:05"), newSession.ClassroomId)
-	fmt.Println(query)
-	_, err = db.Query(query)
-	if err != nil {
-		fmt.Println("Error creating a session")
-		fmt.Println(err)
-		return false, 0
-	}
-	query = fmt.Sprintf("select session_id from sessions where session_date = '%s' and start_time = '%s' and end_time = '%s';", newSession.End_time.Format("2006-01-02"), newSession.Start_time.Format("15:04:05"), newSession.End_time.Format("15:04:05"))
+	query := fmt.Sprintf("insert into sessions(session_date,start_time,end_time,classroom_id) values ('%s','%s','%s',%d) returning session_id", newSession.End_time.Format("2006-01-02"), newSession.Start_time.Format("15:04:05"), newSession.End_time.Format("15:04:05"), newSession.ClassroomId)
 	fmt.Println(query)
 	result, err := db.Query(query)
 	if err != nil {
-		fmt.Println("Error retrieving a session id")
+		fmt.Println("Error creating a session")
 		fmt.Println(err)
 		return false, 0
 	}
@@ -111,46 +122,65 @@ func createUnqiueSession(newSession models.Session) (bool, int) {
 		result.Scan(&sid)
 	}
 	if sid != 0 {
-		query = fmt.Sprintf("insert into keygen(session_key,session_id) values('%s',%d)", sessionUniqueCode, sid)
+		popup1, popup2, popup3 := GetPopUpTimings(newSession.Start_time, newSession.End_time)
+
+		query = fmt.Sprintf("insert into keygen(session_key,session_id,popup1,popup2,popup3) values('%s',%d,'%s','%s','%s')", sessionUniqueCode, sid, popup1.Format("15:04:05"), popup2.Format("15:04:05"), popup3.Format("15:04:05"))
 		_, err = db.Query(query)
 		if err != nil {
 			fmt.Println("Error creating a session key")
 			fmt.Println(err)
 			return false, 0
 		}
+
+		query = fmt.Sprintf(`
+		insert into attendance
+		select classroom_id, %d as session_id,regnumber from classroom_attendees
+		where classroom_id = (
+			select classroom_id from sessions 
+			where session_id = %d
+		)`, sid, sid)
+		_, err = db.Query(query)
+		if err != nil {
+			fmt.Println("Error creating a session key")
+			fmt.Println(err)
+			return false, 0
+		}
+
+	} else {
+		return false, 0
 	}
 	return true, sid
 
 }
 
-func checkForSession(ClassroomId int) bool {
-	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
-	db, err := sql.Open("postgres", conn)
-	if err != nil {
-		fmt.Println("failed to establish connection with sql")
-		return false
-	}
-	defer db.Close()
+// func checkForSession(ClassroomId int) bool {
+// 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+// 	db, err := sql.Open("postgres", conn)
+// 	if err != nil {
+// 		fmt.Println("failed to establish connection with sql")
+// 		return false
+// 	}
+// 	defer db.Close()
 
-	query := `select max(start_time) <= now()::time and now()::time < max(end_time) from sessions
-where session_date = (
-select max(session_date) from sessions) and classroom_id = %d`
+// 	query := `select max(start_time) <= now()::time and now()::time < max(end_time) from sessions
+// where session_date = (
+// select max(session_date) from sessions) and classroom_id = %d`
 
-	query = fmt.Sprintf(query, ClassroomId)
-	query = strings.TrimSpace(query)
+// 	query = fmt.Sprintf(query, ClassroomId)
+// 	query = strings.TrimSpace(query)
 
-	result, err := db.Query(query)
-	if err != nil {
-		fmt.Println("Error occurred during checking if session already exists")
-		fmt.Println(err)
-		return false
-	}
-	var exist bool
-	for result.Next() {
-		result.Scan(&exist)
-	}
-	return exist
-}
+// 	result, err := db.Query(query)
+// 	if err != nil {
+// 		fmt.Println("Error occurred during checking if session already exists")
+// 		fmt.Println(err)
+// 		return false
+// 	}
+// 	var exist bool
+// 	for result.Next() {
+// 		result.Scan(&exist)
+// 	}
+// 	return exist
+// }
 
 func isAuthenticClassroom(TeacherId string, ClassroomId int) bool {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
