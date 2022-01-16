@@ -7,8 +7,10 @@ import (
 	home "attsys/home/backend"
 	student "attsys/student/backend"
 	teacher "attsys/teacher/backend"
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -57,5 +59,10 @@ func initRouter() {
 }
 
 func main() {
+	loc, _ := time.LoadLocation("Asia/Kolkata")
+	now := time.Now().In(loc)
+	fmt.Println("Location : ", loc, " Time : ", now)
+
+	// fmt.Println("Format: ", time.Now().Format(time.RFC3339))
 	initRouter()
 }

@@ -23,7 +23,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Error retrieving student session")
 	}
-	if session.Values["SESSION_ID"] != nil {
+	if session.Values["SESSION_KEY"] != nil {
 		http.Redirect(w, r, "/student/dashboard/session", http.StatusSeeOther)
 	} else {
 		if r.Method == "GET" {
@@ -43,14 +43,8 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 			if SessionId := isValidSessionKey(newJoinee.SessionKey); SessionId != 0 {
 				Regnumber := session.Values["REG_NUMBER"].(string)
 				if IsStudentBelongsToClassroom(Regnumber, SessionId) {
-					session.Values["SESSION_ID"] = SessionId
-
-					StartTime, EndTime := GetSessionTimings(SessionId)
-					fmt.Println(EndTime)
-					session.Values["SESSION_START_TIME"] = StartTime.String()
-					session.Values["SESSION_END_TIME"] = EndTime.String()
+					session.Values["SESSION_KEY"] = newJoinee.SessionKey
 					fmt.Println(session.Save(r, w))
-
 					msg.Status = 1
 					fmt.Println("Student belongs to the session!!")
 				} else {
@@ -77,20 +71,29 @@ func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error retrieving student session")
 	}
 
-	if session.Values["SESSION_ID"] != nil {
+	if session.Values["SESSION_KEY"] != nil {
 		if r.Method == "GET" {
-			SessionId := session.Values["SESSION_ID"].(int)
-
+			SessionId := isValidSessionKey(session.Values["SESSION_KEY"].(string))
+			if SessionId == 0 {
+				http.Redirect(w, r, "/student/dashboard", http.StatusSeeOther)
+			}
 			StudentSessionDetails, _ := GetSessionDetails(SessionId)
 			tmp, _ := template.ParseFiles("classroom/frontend/ss/sessiondashboard.html")
 			tmp.Execute(w, StudentSessionDetails)
 		} else if r.Method == "POST" {
-			SessionId := session.Values["SESSION_ID"].(int)
+			SessionId := isValidSessionKey(session.Values["SESSION_KEY"].(string))
 			msg := models.Htmlresponse{
 				Response: "",
 				Status:   0,
 			}
+			if SessionId == 0 {
+				msg.Response = "Invalid Session Key!"
+				json.NewEncoder(w).Encode(msg)
+				return
+			}
+
 			status := GetSessionStatus(SessionId)
+
 			fmt.Println("Session Status:", status)
 			switch status {
 			case "CLOSED":
@@ -134,8 +137,17 @@ func SessionDetails(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			session, _ := store.Get(r, "student")
 			SessionId := session.Values["SESSION_ID"].(int)
-			StartTime, EndTime := GetSessionTimings(SessionId)
+			Date, StartTime, EndTime := GetSessionTimings(SessionId)
+
+			StartTime = GetIndianTimeStamp(Date, StartTime)
+			EndTime = GetIndianTimeStamp(Date, EndTime)
+
 			PopUp1, PopUp2, PopUp3 := GetPopUpTimings(SessionId)
+
+			PopUp1 = GetIndianTimeStamp(Date, PopUp1)
+			PopUp2 = GetIndianTimeStamp(Date, PopUp2)
+			PopUp3 = GetIndianTimeStamp(Date, PopUp3)
+
 			res := models.StudentSessionTimerDetails{
 				StartTime: StartTime,
 				EndTime:   EndTime,
@@ -143,6 +155,8 @@ func SessionDetails(w http.ResponseWriter, r *http.Request) {
 				PopUp2:    PopUp2,
 				PopUp3:    PopUp3,
 			}
+
+			// fmt.Println("Session And Pop up timing Details:", res)
 			json.NewEncoder(w).Encode(res)
 		}
 	}

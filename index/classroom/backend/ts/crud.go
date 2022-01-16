@@ -109,7 +109,7 @@ func createUnqiueSession(newSession models.Session) (bool, int) {
 	justNow := time.Now()
 	sessionUniqueCode := fmt.Sprintf("%s%d%d%d", keygen.String(5), justNow.Hour(), justNow.Minute(), justNow.Second())
 	fmt.Println(sessionUniqueCode)
-	query := fmt.Sprintf("insert into sessions(session_date,start_time,end_time,classroom_id) values ('%s','%s','%s',%d) returning session_id", newSession.End_time.Format("2006-01-02"), newSession.Start_time.Format("15:04:05"), newSession.End_time.Format("15:04:05"), newSession.ClassroomId)
+	query := fmt.Sprintf("insert into sessions(session_date,start_time,end_time,classroom_id) values ('%s','%s','%s',%d) returning session_id", newSession.Date.Format("2006-01-02"), newSession.Start_time.Format("15:04:05"), newSession.End_time.Format("15:04:05"), newSession.ClassroomId)
 	fmt.Println(query)
 	result, err := db.Query(query)
 	if err != nil {
@@ -123,7 +123,6 @@ func createUnqiueSession(newSession models.Session) (bool, int) {
 	}
 	if sid != 0 {
 		popup1, popup2, popup3 := GetPopUpTimings(newSession.Start_time, newSession.End_time)
-
 		query = fmt.Sprintf("insert into keygen(session_key,session_id,popup1,popup2,popup3) values('%s',%d,'%s','%s','%s')", sessionUniqueCode, sid, popup1.Format("15:04:05"), popup2.Format("15:04:05"), popup3.Format("15:04:05"))
 		_, err = db.Query(query)
 		if err != nil {
@@ -271,6 +270,15 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 		data.SessionDetails.Date = temp.Date.Format("2006-01-02")
 		data.SessionDetails.Start_time = temp.Start_time.Format("15:04:05")
 		data.SessionDetails.End_time = temp.End_time.Format("15:04:05")
+	}
+	query = fmt.Sprintf(`select session_key from keygen where session_id = %d`, SessionId)
+	result, err = db.Query(query)
+	if err != nil {
+		fmt.Println("Error retrieving teacher session dash board details")
+		return data
+	}
+	for result.Next() {
+		result.Scan(&data.SessionDetails.SessionKey)
 	}
 
 	query = fmt.Sprintf(`select concat(firstname,' ',lastname) as studentname,regnumber, attendance1,attendance1_fp ,attendance2,attendance2_fp, attendance3,attendance3_fp  from (

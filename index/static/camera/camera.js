@@ -6,21 +6,26 @@
     <canvas id="canvas" width=320 height=240></canvas>
 */
 
-
-
-
-
 //face detection
 var canSet = false; // bool to set isFaceVisible
 var isFaceVisible = false; // bool to detect face
+var isPhotoTaken = false;
 var modelsLoaded = false; // bool to detect whether models have loaded
 var cameraLoaded = false; // bool to see whether camera loaded or not
+var player;
+var canvas;
+var captureButton;
+
+const constraints = {
+    video: true,
+};
+
 Promise.all(
     [
-        faceapi.nets.tinyFaceDetector.loadFromUri('/static/student/signup/models'),
-        faceapi.nets.faceLandmark68Net.loadFromUri('/static/student/signup/models'),
-        faceapi.nets.faceRecognitionNet.loadFromUri('/static/student/signup/models'),
-        faceapi.nets.faceExpressionNet.loadFromUri('/static/student/signup/models')
+        faceapi.nets.tinyFaceDetector.loadFromUri('/static/camera/facedetection/models'),
+        faceapi.nets.faceLandmark68Net.loadFromUri('/static/camera/facedetection/models'),
+        faceapi.nets.faceRecognitionNet.loadFromUri('/static/camera/facedetection/models'),
+        faceapi.nets.faceExpressionNet.loadFromUri('/static/camera/facedetection/models')
     ]
 ).then(
     function(){
@@ -29,21 +34,6 @@ Promise.all(
 );
 
 
-// video 
-
-const player = document.getElementById('player');
-player.removeAttribute('controls') ;  
-
-//canvas
-const canvas = document.getElementById('canvas');
-const context = canvas.getContext('2d');
-
-//capture button
-const captureButton = document.getElementById('capture');
-
-const constraints = {
-    video: true,
-};
 
 // start video
 function startVideo(){
@@ -54,21 +44,6 @@ function startVideo(){
     });
 }
 
-player.addEventListener('play',()=>{
-    console.log("Video started");
-    setInterval(async () =>{
-        const detections = await faceapi.detectAllFaces(player,
-        new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks()
-        if(detections.length == 0 && canSet ){
-            isFaceVisible = false;
-            document.getElementById('face-detection').innerHTML = 'No face detected!';
-        }
-        else if(canSet){
-            isFaceVisible = true;
-            document.getElementById('face-detection').innerHTML = 'Face detected!';
-        }
-    },100)
-});
 
 
 // stop video
@@ -78,28 +53,6 @@ function stopVideo(){
     player.pause();
     player.style.display = 'none';
 }
-player.addEventListener('pause',()=>{
-    console.log('Video stopped');
-})
-
-
-
-captureButton.addEventListener('click', () => {
-    // Draw the video frame to the canvas.
-    if(captureButton.value == "1"){
-        console.log('Camera enabled');
-        startVideo();
-        player.style.display = '';
-        captureButton.innerText = 'Capture';
-        captureButton.value = "0";
-    }else{
-        console.log('Camera disabled');
-        context.drawImage(player, 0, 0, canvas.width, canvas.height);
-        stopVideo();
-        captureButton.innerText = 'Retake';
-        captureButton.value = "1";
-    }
-});
 
 
 function loadCamera(e){
@@ -118,11 +71,12 @@ function loadCamera(e){
         div.setAttribute("id","face-detection");
 
     let canvas = document.createElement("canvas");
-        canvas.setAttribute("id",canvas); 
+        canvas.setAttribute("id","canvas"); 
         canvas.width = 320;
         canvas.height = 240;
     
     let parent = document.createElement("div");
+    parent.setAttribute("id","camera");
     parent.appendChild(video);
     parent.appendChild(button);
     parent.appendChild(div);
@@ -130,11 +84,58 @@ function loadCamera(e){
 
     e.appendChild(parent);
     cameraLoaded = true;
+
+    // video 
+    player = document.getElementById('player');
+    player.removeAttribute('controls') ;  
+    player.addEventListener('pause',()=>{
+        console.log('Video stopped');
+    })
+    player.addEventListener('play',()=>{
+        console.log("Video started");
+        setInterval(async () =>{
+            const detections = await faceapi.detectAllFaces(player,
+            new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks()
+            if(detections.length == 0 && canSet ){
+                isFaceVisible = false;
+                document.getElementById('face-detection').innerHTML = 'No face detected!';
+            }
+            else if(canSet){
+                isFaceVisible = true;
+                document.getElementById('face-detection').innerHTML = 'Face detected!';
+            }
+        },100)
+    });
+    
+    
+    //canvas
+    canvas = document.getElementById('canvas');
+    context = canvas.getContext('2d');
+
+    //capture button
+    captureButton = document.getElementById('capture');
+    captureButton.addEventListener('click', () => {
+        // Draw the video frame to the canvas.
+        if(captureButton.value == "1"){
+            console.log('Camera enabled');
+            startVideo();
+            player.style.display = '';
+            captureButton.innerText = 'Capture';
+            captureButton.value = "0";
+        }else{
+            isPhotoTaken = true;
+            console.log('Camera disabled');
+            context.drawImage(player, 0, 0, canvas.width, canvas.height);
+            stopVideo();
+            captureButton.innerText = 'Retake';
+            captureButton.value = "1";
+        }
+    });
+    
     return parent;
 
 }
 
-function unloadCamera(camera){
-    cameraLoaded = false;
-    document.removeChild(camera);
+function unloadCamera(parent,camera){
+    parent.removeChild(camera);
 }

@@ -84,6 +84,7 @@ type PrettySession struct {
 	Start_time string
 	End_time   string
 	Status     string
+	SessionKey string
 }
 
 type StudentSessionDashBoard struct {

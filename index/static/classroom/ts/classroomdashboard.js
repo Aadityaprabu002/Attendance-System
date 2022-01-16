@@ -27,7 +27,8 @@ function submitForm(){
     
     st = new Date(dt+" "+st);
     et = new Date(dt+" "+et);
-    
+    dt = new Date(dt);
+
     if (st.getTime() > et.getTime()){
         document.querySelector("#response").innerHTML = "Start time greater than end time! javascript";
         return;
@@ -39,9 +40,11 @@ function submitForm(){
         return;
     }
 
-    st.setTime(st.getTime() - st.getTimezoneOffset()*60*1000)
-    et.setTime(et.getTime() - et.getTimezoneOffset()*60*1000);
+    // st.setTime(st.getTime() - st.getTimezoneOffset()*60*1000)
+    // et.setTime(et.getTime() - et.getTimezoneOffset()*60*1000);
+
     let obj = JSON.stringify({
+       "date":dt,
        "start_time": st,
        "end_time": et
     });

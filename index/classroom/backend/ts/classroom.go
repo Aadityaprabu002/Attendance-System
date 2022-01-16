@@ -156,7 +156,11 @@ func ClassroomDashboard(w http.ResponseWriter, r *http.Request) {
 
 			}
 			params.ClassroomId = ClassroomId
-			fmt.Println(params)
+			loc, _ := time.LoadLocation("Asia/Kolkata")
+			params.Start_time = params.Start_time.In(loc)
+			params.End_time = params.End_time.In(loc)
+
+			fmt.Println("New session details:", params)
 
 			if err != nil {
 				fmt.Println("Error obtaining post values!")
@@ -221,5 +225,7 @@ func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 
 			fmt.Println("POST")
 		}
+	} else {
+		http.Redirect(w, r, "/teacher/signin", http.StatusSeeOther)
 	}
 }

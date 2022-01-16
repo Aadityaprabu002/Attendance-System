@@ -160,23 +160,24 @@ func GetSessionStatus(SessionId int) string {
 	return status
 }
 
-func GetSessionTimings(SessionId int) (time.Time, time.Time) {
+func GetSessionTimings(SessionId int) (time.Time, time.Time, time.Time) {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	db, err := sql.Open("postgres", conn)
 	var StartTime time.Time
 	var EndTime time.Time
+	var Date time.Time
 	if err != nil {
 		fmt.Println("failed to establish connection with sql")
-		return StartTime, EndTime
+		return Date, StartTime, EndTime
 	}
 	defer db.Close()
 
-	query := fmt.Sprintf(`select start_time,end_time from sessions where session_id = %d`, SessionId)
+	query := fmt.Sprintf(`select session_date,start_time,end_time from sessions where session_id = %d`, SessionId)
 	result, _ := db.Query(query)
 	for result.Next() {
-		result.Scan(&StartTime, &EndTime)
+		result.Scan(&Date, &StartTime, &EndTime)
 	}
-	return StartTime, EndTime
+	return Date, StartTime, EndTime
 }
 
 func GetPopUpTimings(SessionId int) (time.Time, time.Time, time.Time) {
@@ -236,8 +237,9 @@ func InsertAttendance(Regnumber string, SessionId int, att models.PostAttendance
 	query := fmt.Sprintf(`
 		update table attendance
 		set %s = '%s'
-		where regnumber = '%s'
-	`, attcolumns[att.AttNum], att.Time, Regnumber)
+		where regnumber = '%s and session_id = %d'
+	`, attcolumns[att.AttNum], att.Time, Regnumber, SessionId)
+	fmt.Println(query)
 	_, err = db.Query(query)
 	if err != nil {
 		fmt.Println("Error accepting attendance!")
@@ -250,8 +252,8 @@ func InsertAttendance(Regnumber string, SessionId int, att models.PostAttendance
 	query = fmt.Sprintf(`
 		update table attendance_image_table
 		set %s = '%s'
-		where regnumber = '%s'
-	`, attcolumns[att.AttNum], ImagePath, Regnumber)
+		where regnumber = '%s and session_id = %d'
+	`, attcolumns[att.AttNum], ImagePath, Regnumber, SessionId)
 	_, err = db.Query(query)
 	if err != nil {
 		fmt.Println("Error accepting attendance!")
@@ -259,4 +261,19 @@ func InsertAttendance(Regnumber string, SessionId int, att models.PostAttendance
 		return false
 	}
 	return true
+}
+
+func GetIndianTimeStamp(Date time.Time, Time time.Time) time.Time {
+	loc, _ := time.LoadLocation("Asia/Kolkata")
+	INDtime := time.Date(
+		Date.Year(),
+		Date.Month(),
+		Date.Day(),
+		Time.Hour(),
+		Time.Minute(),
+		Time.Second(),
+		0,
+		loc,
+	)
+	return INDtime
 }

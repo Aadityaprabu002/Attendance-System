@@ -6,10 +6,10 @@ var isFaceVisible = false; // bool to detect face
 
 Promise.all(
     [
-        faceapi.nets.tinyFaceDetector.loadFromUri('/static/student/signup/models'),
-        faceapi.nets.faceLandmark68Net.loadFromUri('/static/student/signup/models'),
-        faceapi.nets.faceRecognitionNet.loadFromUri('/static/student/signup/models'),
-        faceapi.nets.faceExpressionNet.loadFromUri('/static/student/signup/models')
+        faceapi.nets.tinyFaceDetector.loadFromUri('/static/camera/facedetection/models'),
+        faceapi.nets.faceLandmark68Net.loadFromUri('/static/camera/facedetection/models'),
+        faceapi.nets.faceRecognitionNet.loadFromUri('/static/camera/facedetection/models'),
+        faceapi.nets.faceExpressionNet.loadFromUri('/static/camera/facedetection/models')
     ]
 ).then(startVideo);
 
