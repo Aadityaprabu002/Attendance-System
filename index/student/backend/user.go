@@ -1,6 +1,7 @@
 package student
 
 import (
+	admin "attsys/admin/backend/ss"
 	key "attsys/env"
 	models "attsys/models"
 	"encoding/json"
@@ -10,8 +11,6 @@ import (
 
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 var store = sessions.NewCookieStore([]byte(key.GetSecretKey()))
@@ -20,10 +19,10 @@ func IsLogged(r *http.Request) bool {
 	session, _ := store.Get(r, "student")
 	return !session.IsNew && session.Values["REG_NUMBER"] != nil
 }
+
 func Signin(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	// defer reviveProcess()
 	if r.Method == "GET" {
 		if IsLogged(r) {
 			http.Redirect(w, r, "/student/dashboard", http.StatusSeeOther)
@@ -48,8 +47,8 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 				Firstname: "",
 				Lastname:  "",
 			}
-			if isStudentExist(student) {
-				if isValidStudent(student) {
+			if admin.IsStudentExist(student.Regnumber) {
+				if admin.IsValidStudent(student) {
 					fmt.Println("Valid Student!!")
 					session, _ := store.Get(r, "student")
 					if session.IsNew {
@@ -78,74 +77,22 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(msg)
 	}
 }
-func Signup(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	if r.Method == "GET" {
-		fmt.Println("GET")
-		tmp, _ := template.ParseFiles("student/frontend/signup/signup.html")
-		tmp.Execute(w, nil)
-		return
-	} else {
-		fmt.Println("POST")
-		msg := models.Htmlresponse{
-			Response: "",
-			Status:   0,
-		}
-		var params models.StudentSignup
-		err := json.NewDecoder(r.Body).Decode(&params)
-		if err == nil {
-			if params.Password[0] == params.Password[1] {
-				encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(params.Password[0]), 8)
-				newStudent := models.Student{
-					Email:     params.Email,
-					Firstname: params.Firstname,
-					Lastname:  params.Lastname,
-					Regnumber: params.Regnumber,
-					Password:  string(encryptedPassword),
-				}
-				if !isStudentExist(newStudent) {
-					if saveStudentImageData(newStudent.Regnumber, params.Image) {
-						insertStudent(newStudent)
-						msg.Response = "Successfully account created!"
-						msg.Status = 1
-					} else {
-						fmt.Println("Failed creating a record!")
-					}
-
-				} else {
-					msg.Response = "Email already exist!"
-
-				}
-			} else {
-				msg.Response = "Password not matching!"
-
-			}
-		}
-		json.NewEncoder(w).Encode(msg)
-
-	}
-
-}
 
 func Signout(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, "student")
-	if err != nil {
-		fmt.Println(err)
-	}
-	session.Options.MaxAge = -1
-	session.Save(r, w)
-}
-func MatchFace(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	if r.Method == "GET" {
-		fmt.Print("GET")
-		tmp, _ := template.ParseFiles("student/frontend/signup/matchface.html")
-		tmp.Execute(w, nil)
-		session, err := store.Get(r, "student")
-		if err != nil {
-			fmt.Println(err)
+		session, _ := store.Get(r, "student")
+		if IsLogged(r) {
+			if session.Values["REG_NUMBER"] != nil {
+				session.Values["REG_NUMBER"] = nil
+			}
+			if session.Values["SESSION_KEY"] != nil {
+				session.Values["SESSION_KEY"] = nil
+			}
 		}
-		fmt.Println(session.Values["REG_NUMBER"])
-		return
+		session.Options.MaxAge = -1
+		session.Save(r, w)
+		http.Redirect(w, r, "/student/signin", http.StatusSeeOther)
 	}
+
 }

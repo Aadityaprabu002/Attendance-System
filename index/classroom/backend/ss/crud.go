@@ -202,6 +202,7 @@ func GetPopUpTimings(SessionId int) (time.Time, time.Time, time.Time) {
 func saveSessionStudentImageData(Regnumber string, SessionId int, ImageData string, ImageDataNumber int) string {
 	fpath := fmt.Sprintf("../database/sessions/%d/%s/", SessionId, Regnumber)
 	_ = os.MkdirAll(fpath, 0777)
+	ImageData = strings.Split(ImageData, ",")[1]
 	DecodedImageData, err := base64.StdEncoding.DecodeString(ImageData)
 	if err != nil {
 		fmt.Println("Bad base 64 string!")
@@ -233,13 +234,16 @@ func InsertAttendance(Regnumber string, SessionId int, att models.PostAttendance
 	}
 	defer db.Close()
 
+	loc, _ := time.LoadLocation("Asia/Kolkata")
+	att.Time = att.Time.In(loc) // Indian time
+
 	attcolumns := [...]string{"attendance1", "attendance2", "attendance3"}
 	query := fmt.Sprintf(`
-		update table attendance
+		update attendance
 		set %s = '%s'
-		where regnumber = '%s and session_id = %d'
-	`, attcolumns[att.AttNum], att.Time, Regnumber, SessionId)
-	fmt.Println(query)
+		where regnumber = '%s' and session_id = %d
+	`, attcolumns[att.AttNum-1], att.Time.Format("15:04:05"), Regnumber, SessionId)
+
 	_, err = db.Query(query)
 	if err != nil {
 		fmt.Println("Error accepting attendance!")
@@ -250,10 +254,10 @@ func InsertAttendance(Regnumber string, SessionId int, att models.PostAttendance
 	ImagePath := saveSessionStudentImageData(Regnumber, SessionId, att.Image, att.AttNum)
 	attcolumns = [...]string{"attendance1_fp", "attendance2_fp", "attendance3_fp"}
 	query = fmt.Sprintf(`
-		update table attendance_image_table
+		update attendance_image_table
 		set %s = '%s'
-		where regnumber = '%s and session_id = %d'
-	`, attcolumns[att.AttNum], ImagePath, Regnumber, SessionId)
+		where regnumber = '%s' and session_id = %d
+	`, attcolumns[att.AttNum-1], ImagePath, Regnumber, SessionId)
 	_, err = db.Query(query)
 	if err != nil {
 		fmt.Println("Error accepting attendance!")

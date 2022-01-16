@@ -1,7 +1,7 @@
 package teacher
 
 import (
-	admin "attsys/admin/backend"
+	admin "attsys/admin/backend/ts"
 	key "attsys/env"
 	"attsys/models"
 	"encoding/json"

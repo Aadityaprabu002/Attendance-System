@@ -1,7 +1,9 @@
 package main
 
 import (
-	admin "attsys/admin/backend"
+	adminas "attsys/admin/backend/as"
+	adminss "attsys/admin/backend/ss"
+	admints "attsys/admin/backend/ts"
 	student_classroom "attsys/classroom/backend/ss"
 	teacher_classroom "attsys/classroom/backend/ts"
 	home "attsys/home/backend"
@@ -38,24 +40,33 @@ import (
 
 // }
 func initRouter() {
-	r := mux.NewRouter()
 
-	fs := http.FileServer(http.Dir("./static"))
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
-	r.HandleFunc("/", home.Homepage)
-	r.HandleFunc("/student/signin", student.Signin)
-	r.HandleFunc("/student/signup", student.Signup)
-	r.HandleFunc("/admin/teacher/signup", admin.TeacherSignup)
-	r.HandleFunc("/teacher/signin", teacher.Signin)
-	r.HandleFunc("/teacher/dashboard", teacher_classroom.Dashboard)
-	r.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}", teacher_classroom.ClassroomDashboard)
-	r.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}/sessiondashboard/{SessionId}", teacher_classroom.SessionDashboard)
-	r.HandleFunc("/student/dashboard", student_classroom.Dashboard)
-	r.HandleFunc("/student/dashboard/session", student_classroom.SessionDashboard)
-	r.HandleFunc("/student/dashboard/session/timerdetails", student_classroom.SessionDetails).Methods("GET")
-	r.HandleFunc("/student/dashboard/session/postattendance", student_classroom.PostAttendance).Methods("GET")
-	// r.HandleFunc("/", handleSession)
-	log.Fatal(http.ListenAndServe(":8080", r))
+	publicfs := http.FileServer(http.Dir("./static"))
+	adminfs := http.FileServer(http.Dir("./static"))
+	admin := mux.NewRouter()
+	admin.HandleFunc("/", adminas.Index)
+	admin.HandleFunc("/admin/student/signup", adminss.Signup)
+	admin.HandleFunc("/admin/teacher/signup", admints.TeacherSignup)
+
+	public := mux.NewRouter()
+	public.PathPrefix("/static/").Handler(http.StripPrefix("/static/", publicfs))
+	public.HandleFunc("/", home.Homepage)
+	public.HandleFunc("/student/signin", student.Signin)
+	public.HandleFunc("/teacher/signin", teacher.Signin)
+	public.HandleFunc("/teacher/dashboard", teacher_classroom.Dashboard)
+	public.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}", teacher_classroom.ClassroomDashboard)
+	public.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}/sessiondashboard/{SessionId}", teacher_classroom.SessionDashboard)
+	public.HandleFunc("/student/dashboard", student_classroom.Dashboard)
+	public.HandleFunc("/student/dashboard/session", student_classroom.SessionDashboard).Methods("GET")
+	public.HandleFunc("/student/dashboard/session/timerdetails", student_classroom.SessionDetails).Methods("GET")
+	public.HandleFunc("/student/dashboard/session/postattendance", student_classroom.PostAttendance).Methods("POST")
+	public.HandleFunc("/student/dashboard/session/endsession", student_classroom.EndSession)
+	public.HandleFunc("/student/signout", student.Signout)
+	go func() {
+		log.Fatal(http.ListenAndServe(":4040", admin))
+	}()
+	log.Fatal(http.ListenAndServe(":8080", public))
+
 }
 
 func main() {
@@ -63,6 +74,5 @@ func main() {
 	now := time.Now().In(loc)
 	fmt.Println("Location : ", loc, " Time : ", now)
 
-	// fmt.Println("Format: ", time.Now().Format(time.RFC3339))
 	initRouter()
 }

@@ -137,5 +137,6 @@ function loadCamera(e){
 }
 
 function unloadCamera(parent,camera){
+    cameraLoaded = false;
     parent.removeChild(camera);
 }

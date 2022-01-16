@@ -1,24 +1,20 @@
-package student
+package admin
 
 import (
-	connections "attsys/connections"
+	"attsys/connections"
 	"attsys/models"
+	"bytes"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"image/png"
 	"os"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-// func reviveProcess() {
-// 	if r := recover(); r != nil {
-// 		fmt.Println("Process Revived!!")
-// 	}
-// }
-
-func insertStudent(newUser models.Student) {
+func InsertStudent(newUser models.Student) {
 	// defer reviveProcess()
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	db, err := sql.Open("postgres", conn)
@@ -43,23 +39,24 @@ func insertStudent(newUser models.Student) {
 
 }
 
-func isStudentExist(student models.Student) bool {
-	// defer reviveProcess()
+func IsStudentExist(Regnumber string) bool {
+
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	fmt.Println(conn)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
 		fmt.Println(err)
-		panic(err)
+		fmt.Println("Error connecting to database!")
 	}
 	defer db.Close()
-	query := fmt.Sprintf(`select exists(select 1 from students where regnumber = '%s')`, student.Regnumber)
+	query := fmt.Sprintf(`select exists(select 1 from students where regnumber = '%s')`, Regnumber)
 	query = strings.TrimSpace(query)
 
 	result, err := db.Query(query)
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		fmt.Println("Error in checking student already exists")
 	}
 
 	var exist bool
@@ -70,8 +67,8 @@ func isStudentExist(student models.Student) bool {
 	return exist
 }
 
-func isValidStudent(user models.Student) bool {
-	// defer reviveProcess()
+func IsValidStudent(user models.Student) bool {
+
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 
 	db, err := sql.Open("postgres", conn)
@@ -102,24 +99,31 @@ func isValidStudent(user models.Student) bool {
 
 }
 
-func saveStudentImageData(regnumber string, b64 string) bool {
-
-	dir := fmt.Sprintf("../database/%s/", regnumber)
-	err := os.Mkdir(dir, 0777)
+func SaveStudentImageData(regnumber string, ImageData string) string {
+	fpath := fmt.Sprintf("../database/students/%s/", regnumber)
+	err := os.Mkdir(fpath, 0777)
 	if err != nil {
 		fmt.Println("Failed creating directory for new student")
 	}
 
-	tempFile, err := ioutil.TempFile(dir, "*.txt")
+	ImageData = strings.Split(ImageData, ",")[1]
+	DecodedImageData, err := base64.StdEncoding.DecodeString(ImageData)
 	if err != nil {
-		fmt.Println("Error creating user image file")
-		return false
+		fmt.Println("Bad base 64 string!")
+		return ""
 	}
-	defer tempFile.Close()
-	_, err = tempFile.Write([]byte(b64))
+	ImgReader := bytes.NewReader(DecodedImageData)
+	Image, err := png.Decode(ImgReader)
 	if err != nil {
-		fmt.Println("Error writing user image file")
-		return false
+		fmt.Println("Bad image")
+		return ""
 	}
-	return true
+	ImagePath := fmt.Sprintf("%simage.png", fpath)
+	ImageFile, err := os.OpenFile(ImagePath, os.O_WRONLY|os.O_CREATE, 0777)
+	if err != nil {
+		fmt.Println("Cannot open file")
+		return ""
+	}
+	png.Encode(ImageFile, Image)
+	return ImagePath
 }
