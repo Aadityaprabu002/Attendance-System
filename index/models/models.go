@@ -13,6 +13,7 @@ type Student struct {
 	Lastname  string `json:"lastname"`
 	Email     string `json:"email"`
 	Regnumber string `json:"regnumber"`
+	Image     string `json:"image64"`
 	Password  string `json:"-"`
 }
 

@@ -102,10 +102,10 @@ function sendRequest(obj){
 }
 
 function submitForm(){
-    if(!isFaceVisible){
-        document.getElementById('response').innerHTML = 'Form can not be submitted since no face was detected!';
-        return;
-    }
+    // if(!isFaceVisible){
+    //     document.getElementById('response').innerHTML = 'Form can not be submitted since no face was detected!';
+    //     return;
+    // }
     // let image64 = document.getElementById("canvas").toDataURL('image/png');
     let fname = document.querySelector("#fname").value;
     let lname = document.querySelector("#lname").value;

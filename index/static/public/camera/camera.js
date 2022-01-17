@@ -115,6 +115,10 @@ function loadCamera(e){
     //capture button
     captureButton = document.getElementById('capture');
     captureButton.addEventListener('click', () => {
+        if(!modelsLoaded){
+            console.log('Waiting to load models!')
+            return;
+        }
         // Draw the video frame to the canvas.
         if(captureButton.value == "1"){
             console.log('Camera enabled');

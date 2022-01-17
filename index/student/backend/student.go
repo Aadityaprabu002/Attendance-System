@@ -26,11 +26,11 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		if IsLogged(r) {
 			http.Redirect(w, r, "/student/dashboard", http.StatusSeeOther)
+		} else {
+			fmt.Println("GET")
+			tmp, _ := template.ParseFiles("student/frontend/signin/signin.html")
+			tmp.Execute(w, nil)
 		}
-		fmt.Println("GET")
-		tmp, _ := template.ParseFiles("student/frontend/signin/signin.html")
-		tmp.Execute(w, nil)
-		return
 	} else {
 		fmt.Println("POST")
 		var params models.StudentSignin
@@ -76,6 +76,46 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(msg)
 		json.NewEncoder(w).Encode(msg)
 	}
+}
+
+func CompleteRegistration(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if IsLogged(r) {
+		session, _ := store.Get(r, "student")
+		Regnumber := session.Values["REG_NUMBER"].(string)
+		AccountStatus := admin.GetStudentAccountStatus(Regnumber)
+		if AccountStatus == 1 {
+			if r.Method == "GET" {
+				tmp, _ := template.ParseFiles("student/frontend/signin/set.html")
+				res := admin.GetStudentDetails(Regnumber)
+				tmp.Execute(w, res)
+			} else if r.Method == "POST" {
+				res := models.Htmlresponse{
+					Response: "Failed Registering",
+					Status:   0,
+				}
+				params := models.StudentSignup{}
+				err := json.NewDecoder(r.Body).Decode(&params)
+				if err == nil {
+					if params.Password[0] == params.Password[1] {
+						ImagePath := admin.SaveStudentImageData(Regnumber, params.Image)
+						if ImagePath != "" {
+							encryptedPassword := admin.EncryptPassword(params.Password[0])
+							if admin.UpdateStudentImagePath(Regnumber, ImagePath) && admin.UpdateStudentEmail(Regnumber, params.Email) && admin.UpdateStudentPassword(Regnumber, encryptedPassword) {
+								if admin.UpdateStudentStatus(Regnumber, 2) {
+									res.Response = "Registration completed successfully"
+									res.Status = 1
+								}
+							}
+
+						}
+					}
+
+				}
+			}
+		}
+	}
+
 }
 
 func Signout(w http.ResponseWriter, r *http.Request) {

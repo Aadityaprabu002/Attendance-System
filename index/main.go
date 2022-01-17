@@ -41,17 +41,19 @@ import (
 // }
 func initRouter() {
 
-	publicfs := http.FileServer(http.Dir("./static"))
-	adminfs := http.FileServer(http.Dir("./static"))
+	publicfs := http.FileServer(http.Dir("./static/public"))
+	adminfs := http.FileServer(http.Dir("./static/admin"))
 	admin := mux.NewRouter()
 	admin.HandleFunc("/", adminas.Index)
 	admin.HandleFunc("/admin/student/signup", adminss.Signup)
 	admin.HandleFunc("/admin/teacher/signup", admints.TeacherSignup)
+	admin.PathPrefix("/static/").Handler(http.StripPrefix("/static/", adminfs))
 
 	public := mux.NewRouter()
 	public.PathPrefix("/static/").Handler(http.StripPrefix("/static/", publicfs))
 	public.HandleFunc("/", home.Homepage)
 	public.HandleFunc("/student/signin", student.Signin)
+	public.HandleFunc("/student/signin/completeregistration", student.CompleteRegistration)
 	public.HandleFunc("/teacher/signin", teacher.Signin)
 	public.HandleFunc("/teacher/dashboard", teacher_classroom.Dashboard)
 	public.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}", teacher_classroom.ClassroomDashboard)

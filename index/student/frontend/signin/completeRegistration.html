@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <div>
+            <h1>Welcome {{.Firstname}} {{.Lastname}}</h1>
+            <h6>Please fill up your email and take a good picture of yourself </h6>
+            <h6>Then proceed to your dashboard</h6>
+        </div>
+        <br>
+        <div id="camera">
+            <video id="player" controls autoplay></video>
+            <button type="button" value = "0" id="capture" >Capture</button>
+            <div id="face-detection"></div>
+            <canvas id="canvas" width=320 height=240></canvas>
+        </div>
+        <br>
+        <table>
+            <tbody>
+                <tr>
+                    <th>Email</th>
+                    <td><input name="email" id="email" type="email" required></td>
+                </tr>
+                <tr>
+                    <th>Password</th>
+                    <td><input name="password" id="password" type="password" required></td>
+                </tr>
+                <tr>
+                    <th>Confirm Password</th>
+                    <td><input name="password" id="password" type="password" required></td>
+                </tr>
+                <tr>
+                    <td colspan="2" id="response"></td>
+                </tr>
+            </tbody>
+        </table>
+       
+        <div>
+            <button type="button" id="submit-btn">Submit</button>
+        </div>
+     </div>
+    <script src="/static/camera/facedetection/face-api.min.js"></script>
+    <script src="/static/camera/camera.js"></script>
+    <script src="/staic/student/complete-registration.js"></script>
+</body>
+</html>

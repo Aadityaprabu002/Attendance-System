@@ -14,33 +14,32 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func InsertStudent(newUser models.Student) {
-	// defer reviveProcess()
+func InsertStudent(newUser models.Student) bool {
+
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
 		fmt.Println("failed to establish connection with sql")
+		return false
 	}
 	defer db.Close()
 
 	query := fmt.Sprintf(`
-				Insert into students (email,firstname,lastname,password,regnumber)
-				values('%s','%s','%s','%s','%s') 
-				`, newUser.Email, newUser.Firstname, newUser.Lastname, newUser.Password, newUser.Regnumber)
+				Insert into students (firstname,lastname,password,regnumber,status)
+				values('%s','%s','%s','%s',%d) 
+				`, newUser.Firstname, newUser.Lastname, newUser.Password, newUser.Regnumber, 1)
 
-	query = strings.TrimSpace(query)
-	fmt.Print(query)
 	_, err = db.Exec(query)
 
 	if err != nil {
 		fmt.Println(err)
-		panic("Failed to execute query")
+		fmt.Println("Failed to execute query")
+		return false
 	}
-
+	return true
 }
 
 func IsStudentExist(Regnumber string) bool {
-
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	fmt.Println(conn)
 	db, err := sql.Open("postgres", conn)
@@ -50,7 +49,6 @@ func IsStudentExist(Regnumber string) bool {
 	}
 	defer db.Close()
 	query := fmt.Sprintf(`select exists(select 1 from students where regnumber = '%s')`, Regnumber)
-	query = strings.TrimSpace(query)
 
 	result, err := db.Query(query)
 
@@ -126,4 +124,95 @@ func SaveStudentImageData(regnumber string, ImageData string) string {
 	}
 	png.Encode(ImageFile, Image)
 	return ImagePath
+}
+func UpdateStudentEmail(Regnumber string, newEmail string) bool {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	defer db.Close()
+	query := fmt.Sprintf(`update students set email = '%s' where regnumber = '%s'`, newEmail, Regnumber)
+	_, err = db.Query(query)
+	return err == nil
+}
+func UpdateStudentPassword(Regnumber string, newPassword string) bool {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	defer db.Close()
+	query := fmt.Sprintf(`update students set password = '%s' where regnumber = '%s'`, newPassword, Regnumber)
+	_, err = db.Query(query)
+	return err == nil
+
+}
+func UpdateStudentImagePath(Regnumber string, newImagePath string) bool {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	defer db.Close()
+	query := fmt.Sprintf(`update students set image = '%s' where regnumber = '%s'`, newImagePath, Regnumber)
+	_, err = db.Query(query)
+	return err == nil
+
+}
+func UpdateStudentStatus(Regnumber string, status int) bool {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	defer db.Close()
+	query := fmt.Sprintf(`update students set status = %d where regnumber = '%s'`, status, Regnumber)
+	_, err = db.Query(query)
+	return err == nil
+}
+func GetStudentAccountStatus(Regnumber string) int {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println(err)
+		return 0
+	}
+	defer db.Close()
+	query := fmt.Sprintf(`select status from students where regnumber = '%s'`, Regnumber)
+	var status int
+	result, err := db.Query(query)
+	if err != nil {
+		return 0
+	}
+	for result.Next() {
+		result.Scan(&status)
+	}
+	return status
+}
+
+func GetStudentDetails(Regnumber string) models.Student {
+	var student models.Student
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	query := fmt.Sprintf(`select firstname,lastname,email,picture from students where regnumber = '%s'`, Regnumber)
+	result, _ := db.Query(query)
+	for result.Next() {
+		result.Scan(&student.Firstname, &student.Lastname, &student.Email, &student.Image)
+	}
+	return student
+}
+
+func EncryptPassword(password string) string {
+	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 8)
+	return string(encryptedPassword)
 }
