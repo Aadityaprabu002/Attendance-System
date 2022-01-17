@@ -4,6 +4,7 @@ import (
 	connections "attsys/connections"
 	key "attsys/env"
 	"attsys/models"
+	teacher "attsys/teacher/backend"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -22,9 +23,6 @@ type ClassroomTableData struct {
 }
 type SessionTableData struct {
 	Todos []models.PrettySession
-}
-type HTMLSession struct {
-	SessionExist bool
 }
 
 var store = sessions.NewCookieStore([]byte(key.GetSecretKey()))
@@ -228,5 +226,32 @@ func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		http.Redirect(w, r, "/teacher/signin", http.StatusSeeOther)
+	}
+}
+
+func PostAttendance(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	res := models.Htmlresponse{
+		Response: "Failed Posting attendance",
+		Status:   0,
+	}
+	if teacher.IsLogged(r) {
+		if r.Method == "POST" {
+			params := mux.Vars(r)
+			session, _ := store.Get(r, "teacher")
+			TeacherId := session.Values["TEACHER_ID"].(string)
+			ClassroomId, _ := strconv.Atoi(params["ClassroomId"])
+			SessionId, _ := strconv.Atoi(params["SessionId"])
+			if isAuthenticClassroom(TeacherId, ClassroomId) && isAuthenticSession(TeacherId, ClassroomId, SessionId) {
+				if !IsSessionReviewed(SessionId) {
+					Attendance := []models.ReviewAttendance{}
+					json.NewDecoder(r.Body).Decode(&Attendance)
+					fmt.Println(Attendance)
+					res.Response = "list Received Successfully"
+					res.Status = 1
+				}
+			}
+			json.NewEncoder(w).Encode(res)
+		}
 	}
 }

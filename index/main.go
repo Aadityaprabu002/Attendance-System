@@ -58,6 +58,7 @@ func initRouter() {
 	public.HandleFunc("/teacher/dashboard", teacher_classroom.Dashboard)
 	public.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}", teacher_classroom.ClassroomDashboard)
 	public.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}/sessiondashboard/{SessionId}", teacher_classroom.SessionDashboard)
+	public.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}/sessiondashboard/{SessionId}/postattendance", teacher_classroom.PostAttendance)
 	public.HandleFunc("/student/dashboard", student_classroom.Dashboard)
 	public.HandleFunc("/student/dashboard/session", student_classroom.SessionDashboard).Methods("GET")
 	public.HandleFunc("/student/dashboard/session/timerdetails", student_classroom.SessionDetails).Methods("GET")

@@ -359,3 +359,20 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 	}
 	return data
 }
+
+func IsSessionReviewed(SessionId int) bool {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+		return true
+	}
+	defer db.Close()
+	query := fmt.Sprintf("select review from sessions where session_id = %d", SessionId)
+	result, _ := db.Query(query)
+	var isReviewed bool
+	for result.Next() {
+		result.Scan(&isReviewed)
+	}
+	return isReviewed
+}

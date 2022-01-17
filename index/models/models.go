@@ -134,3 +134,8 @@ type PostAttendance struct {
 	Time   time.Time `json:"attendance_time"`
 	Image  string    `json:"image64"`
 }
+
+type ReviewAttendance struct {
+	Regnumber string `json:"regnumber"`
+	IsPresent bool   `json:"is_present"`
+}

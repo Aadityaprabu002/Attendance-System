@@ -12,6 +12,11 @@ import (
 	"github.com/gorilla/sessions"
 )
 
+func IsLogged(r *http.Request) bool {
+	session, _ := store.Get(r, "student")
+	return !session.IsNew && session.Values["TEACHER_ID"] != nil
+}
+
 var store = sessions.NewCookieStore([]byte(key.GetSecretKey()))
 
 func Signin(w http.ResponseWriter, r *http.Request) {

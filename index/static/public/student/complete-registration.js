@@ -45,7 +45,7 @@ function completeRegistration(){
         "password":password,
         "image64":image64
     });
-    console.log(obj)
+    console.log(obj);
     sendRequest(obj);
 }
 

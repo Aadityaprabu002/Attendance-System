@@ -73,16 +73,20 @@
             <td>{{ .Attendance3.PrettyTime }}</td>
             {{ if $Review }}
                 <td> 
-                    <input type="radio" id="{{  .Regnumber }}" name="attendance" value="30">
-                    <label for="age1">Absent</label><br>
+                    <input type="radio" id = "attendance" name="{{ .Regnumber }}" value="ABSENT" >
+                    <label for="{{ .Regnumber }}">Absent</label><br>
                 </td>
                 <td>
-                    <input type="radio" id="{{  .Regnumber }}" name="attendance" value="60">
-                    <label for="age2">Present</label><br>  
+                    <input type="radio" id = "attendance" name="{{ .Regnumber }}" value="PRESENT">
+                    <label for="{{ .Regnumber }}">Present</label><br>  
                 </td>
             {{ end }}
             {{ end }}
         </tbody>
+        {{ if $Review }}
+         <div id="response"></div>
+         <button id="post-attendance-btn" type="button">POST ATTENDANCE</button>
+        {{ end }}
     </table>
 
     <script src="/static/classroom/ts/sessiondashboard.js"></script>
