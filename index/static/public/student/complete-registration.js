@@ -3,7 +3,7 @@ subbtn.addEventListener('click',completeRegistration)
 
 var camdiv = document.getElementById("camera");
 var camera = loadCamera(camdiv);
-
+startVideo();
 
 function sendRequest(obj){
     xhr = new XMLHttpRequest();
@@ -16,7 +16,7 @@ function sendRequest(obj){
             }
         }
     }
-    xhr.open("POST","/student/signin");
+    xhr.open("POST","/student/signin/complete_registration");
     xhr.setRequestHeader("content-type","application/json")
     xhr.send(obj);
 }
@@ -40,11 +40,12 @@ function completeRegistration(){
     for(let i=0;i<p.length;i++){
         password[i] = p[i].value;
     }
-    let obj = {
+    let obj = JSON.stringify({
         "email":email,
         "password":password,
         "image64":image64
-    }
+    });
+    console.log(obj)
     sendRequest(obj);
 }
 

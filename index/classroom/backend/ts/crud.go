@@ -291,7 +291,7 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 	`, SessionId)
 	result, err = db.Query(query)
 	if err != nil {
-		fmt.Println("Error retrieving teacher session dash board details")
+		fmt.Println("Error retrieving student attending session details")
 		return data
 	}
 	var attendeesData models.AttendanceDetails

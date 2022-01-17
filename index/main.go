@@ -53,7 +53,7 @@ func initRouter() {
 	public.PathPrefix("/static/").Handler(http.StripPrefix("/static/", publicfs))
 	public.HandleFunc("/", home.Homepage)
 	public.HandleFunc("/student/signin", student.Signin)
-	public.HandleFunc("/student/signin/completeregistration", student.CompleteRegistration)
+	public.HandleFunc("/student/signin/complete_registration", student.CompleteRegistration)
 	public.HandleFunc("/teacher/signin", teacher.Signin)
 	public.HandleFunc("/teacher/dashboard", teacher_classroom.Dashboard)
 	public.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}", teacher_classroom.ClassroomDashboard)

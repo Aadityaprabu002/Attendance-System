@@ -19,9 +19,7 @@ function submitForm(){
 
     let regnumber = document.querySelector("#rollno").value
     let password = document.querySelector("#password").value; 
-    let email = document.querySelector("#email").value; 
     let obj = JSON.stringify({
-       "email": email,
        "regnumber":regnumber,
        "password": password
     });

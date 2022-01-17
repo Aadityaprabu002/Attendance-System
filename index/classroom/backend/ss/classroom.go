@@ -24,10 +24,12 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		status := admin.GetStudentAccountStatus(Regnumber)
 		switch status {
 		case 0:
-			http.Redirect(w, r, "student/signin", http.StatusInternalServerError)
+			http.Redirect(w, r, "/student/signin", http.StatusSeeOther)
 		case 1:
-			http.Redirect(w, r, "/student/signin/completeregistration", http.StatusUnauthorized)
+			fmt.Println("Student should completely register first!")
+			http.Redirect(w, r, "/student/signin/complete_registration", http.StatusSeeOther)
 		case 2:
+
 			if session.Values["SESSION_KEY"] != nil {
 				http.Redirect(w, r, "/student/dashboard/session", http.StatusSeeOther)
 			} else {
@@ -48,7 +50,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 						Regnumber := session.Values["REG_NUMBER"].(string)
 						if IsStudentBelongsToClassroom(Regnumber, SessionId) {
 							session.Values["SESSION_KEY"] = newJoinee.SessionKey
-							fmt.Println(session.Save(r, w))
+							session.Save(r, w)
 							msg.Status = 1
 							fmt.Println("Student belongs to the session!!")
 						} else {
@@ -64,7 +66,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else {
-		http.Redirect(w, r, "/student/signin", http.StatusUnauthorized)
+		http.Redirect(w, r, "/student/signin", http.StatusSeeOther)
 	}
 }
 
@@ -76,9 +78,9 @@ func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 		status := admin.GetStudentAccountStatus(Regnumber)
 		switch status {
 		case 0:
-			http.Redirect(w, r, "student/signin", http.StatusInternalServerError)
+			http.Redirect(w, r, "/student/signin", http.StatusSeeOther)
 		case 1:
-			http.Redirect(w, r, "/student/signin/completeregistration", http.StatusUnauthorized)
+			http.Redirect(w, r, "/student/signin/completeregistration", http.StatusSeeOther)
 		case 2:
 			if session.Values["SESSION_KEY"] != nil {
 				if r.Method == "GET" {
@@ -97,12 +99,12 @@ func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 				}
 			} else {
 				fmt.Println("SESSION KEY NOT SET!")
-				http.Redirect(w, r, "/student/dashboard", http.StatusUnauthorized)
+				http.Redirect(w, r, "/student/dashboard", http.StatusSeeOther)
 			}
 		}
 
 	} else {
-		http.Redirect(w, r, "/student/signin", http.StatusUnauthorized)
+		http.Redirect(w, r, "/student/signin", http.StatusSeeOther)
 	}
 
 }
@@ -111,28 +113,32 @@ func SessionDetails(w http.ResponseWriter, r *http.Request) {
 	if student.IsLogged(r) {
 		if r.Method == "GET" {
 			session, _ := store.Get(r, "student")
-			if session.Values["SESSION_KEY"] != nil {
-				SessionId := isValidSessionKey(session.Values["SESSION_KEY"].(string))
-				if SessionId != 0 {
-					Date, StartTime, EndTime := GetSessionTimings(SessionId)
+			Regnumber := session.Values["REG_NUMBER"].(string)
+			status := admin.GetStudentAccountStatus(Regnumber)
+			if status == 2 {
+				if session.Values["SESSION_KEY"] != nil {
+					SessionId := isValidSessionKey(session.Values["SESSION_KEY"].(string))
+					if SessionId != 0 {
+						Date, StartTime, EndTime := GetSessionTimings(SessionId)
 
-					StartTime = GetIndianTimeStamp(Date, StartTime)
-					EndTime = GetIndianTimeStamp(Date, EndTime)
+						StartTime = GetIndianTimeStamp(Date, StartTime)
+						EndTime = GetIndianTimeStamp(Date, EndTime)
 
-					PopUp1, PopUp2, PopUp3 := GetPopUpTimings(SessionId)
+						PopUp1, PopUp2, PopUp3 := GetPopUpTimings(SessionId)
 
-					PopUp1 = GetIndianTimeStamp(Date, PopUp1)
-					PopUp2 = GetIndianTimeStamp(Date, PopUp2)
-					PopUp3 = GetIndianTimeStamp(Date, PopUp3)
+						PopUp1 = GetIndianTimeStamp(Date, PopUp1)
+						PopUp2 = GetIndianTimeStamp(Date, PopUp2)
+						PopUp3 = GetIndianTimeStamp(Date, PopUp3)
 
-					res := models.StudentSessionTimerDetails{
-						StartTime: StartTime,
-						EndTime:   EndTime,
-						PopUp1:    PopUp1,
-						PopUp2:    PopUp2,
-						PopUp3:    PopUp3,
+						res := models.StudentSessionTimerDetails{
+							StartTime: StartTime,
+							EndTime:   EndTime,
+							PopUp1:    PopUp1,
+							PopUp2:    PopUp2,
+							PopUp3:    PopUp3,
+						}
+						json.NewEncoder(w).Encode(res)
 					}
-					json.NewEncoder(w).Encode(res)
 				}
 			}
 		}
@@ -142,39 +148,37 @@ func SessionDetails(w http.ResponseWriter, r *http.Request) {
 func PostAttendance(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method == "POST" {
+		res := models.Htmlresponse{
+			Status:   0,
+			Response: "Failed to post attendance!",
+		}
 		if student.IsLogged(r) {
 			session, _ := store.Get(r, "student")
-			SessionId := isValidSessionKey(session.Values["SESSION_KEY"].(string))
-			res := models.Htmlresponse{
-				Status:   0,
-				Response: "",
-			}
-			if SessionId == 0 {
-				res.Response = "Failed to post attendance"
-				json.NewEncoder(w).Encode(res)
-				return
-			}
 			Regnumber := session.Values["REG_NUMBER"].(string)
-			if status := GetSessionStatus(SessionId); status == "ACTIVE" {
-				params := models.PostAttendance{}
-				err := json.NewDecoder(r.Body).Decode(&params)
-				if err != nil {
-					fmt.Println("Error Decoding attendance request")
-					fmt.Println(err)
-					res.Response = "Failed to post attendance"
-					json.NewEncoder(w).Encode(res)
-					return
-				}
-
-				if InsertAttendance(Regnumber, SessionId, params) {
-					res.Status = 1
-					res.Response = "Attendance Posted Successfull!"
+			status := admin.GetStudentAccountStatus(Regnumber)
+			if status == 2 {
+				SessionId := isValidSessionKey(session.Values["SESSION_KEY"].(string))
+				if SessionId != 0 {
+					Regnumber := session.Values["REG_NUMBER"].(string)
+					if status := GetSessionStatus(SessionId); status == "ACTIVE" {
+						params := models.PostAttendance{}
+						err := json.NewDecoder(r.Body).Decode(&params)
+						if err == nil {
+							if InsertAttendance(Regnumber, SessionId, params) {
+								res.Status = 1
+								res.Response = "Attendance Posted Successfull!"
+							}
+						} else {
+							fmt.Println("Error Decoding attendance request")
+							fmt.Println(err)
+						}
+					}
 				} else {
-					res.Response = "Failed to post attendance!"
+					res.Response = "Invalid Session to post attendance!"
 				}
-				json.NewEncoder(w).Encode(res)
 			}
 		}
+		json.NewEncoder(w).Encode(res)
 	}
 }
 func EndSession(w http.ResponseWriter, r *http.Request) {
@@ -186,11 +190,15 @@ func EndSession(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		if student.IsLogged(r) {
 			session, _ := store.Get(r, "student")
-			if session.Values["SESSION_KEY"] != nil {
-				session.Values["SESSION_KEY"] = nil
-				session.Save(r, w)
-				res.Status = 1
-				res.Response = "Session Exited successfully!"
+			Regnumber := session.Values["REG_NUMBER"].(string)
+			status := admin.GetStudentAccountStatus(Regnumber)
+			if status == 2 {
+				if session.Values["SESSION_KEY"] != nil {
+					session.Values["SESSION_KEY"] = nil
+					session.Save(r, w)
+					res.Status = 1
+					res.Response = "Session Exited successfully!"
+				}
 			}
 		}
 		json.NewEncoder(w).Encode(res)

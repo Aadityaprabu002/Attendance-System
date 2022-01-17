@@ -13,14 +13,6 @@
             <h6>Please fill up your email and take a good picture of yourself </h6>
             <h6>Then proceed to your dashboard</h6>
         </div>
-        <br>
-        <div id="camera">
-            <video id="player" controls autoplay></video>
-            <button type="button" value = "0" id="capture" >Capture</button>
-            <div id="face-detection"></div>
-            <canvas id="canvas" width=320 height=240></canvas>
-        </div>
-        <br>
         <table>
             <tbody>
                 <tr>
@@ -40,13 +32,15 @@
                 </tr>
             </tbody>
         </table>
-       
+        <br>
+        <div id="camera"></div>
+        <br>
         <div>
             <button type="button" id="submit-btn">Submit</button>
         </div>
      </div>
     <script src="/static/camera/facedetection/face-api.min.js"></script>
     <script src="/static/camera/camera.js"></script>
-    <script src="/staic/student/complete-registration.js"></script>
+    <script src="/static/student/complete-registration.js"></script>
 </body>
 </html>

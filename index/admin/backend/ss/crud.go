@@ -99,7 +99,7 @@ func IsValidStudent(user models.Student) bool {
 
 func SaveStudentImageData(regnumber string, ImageData string) string {
 	fpath := fmt.Sprintf("../database/students/%s/", regnumber)
-	err := os.Mkdir(fpath, 0777)
+	err := os.MkdirAll(fpath, 0777)
 	if err != nil {
 		fmt.Println("Failed creating directory for new student")
 	}
@@ -135,6 +135,9 @@ func UpdateStudentEmail(Regnumber string, newEmail string) bool {
 	defer db.Close()
 	query := fmt.Sprintf(`update students set email = '%s' where regnumber = '%s'`, newEmail, Regnumber)
 	_, err = db.Query(query)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return err == nil
 }
 func UpdateStudentPassword(Regnumber string, newPassword string) bool {
@@ -147,6 +150,9 @@ func UpdateStudentPassword(Regnumber string, newPassword string) bool {
 	defer db.Close()
 	query := fmt.Sprintf(`update students set password = '%s' where regnumber = '%s'`, newPassword, Regnumber)
 	_, err = db.Query(query)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return err == nil
 
 }
@@ -158,8 +164,11 @@ func UpdateStudentImagePath(Regnumber string, newImagePath string) bool {
 		return false
 	}
 	defer db.Close()
-	query := fmt.Sprintf(`update students set image = '%s' where regnumber = '%s'`, newImagePath, Regnumber)
+	query := fmt.Sprintf(`update students set picture = '%s' where regnumber = '%s'`, newImagePath, Regnumber)
 	_, err = db.Query(query)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return err == nil
 
 }
@@ -173,6 +182,10 @@ func UpdateStudentStatus(Regnumber string, status int) bool {
 	defer db.Close()
 	query := fmt.Sprintf(`update students set status = %d where regnumber = '%s'`, status, Regnumber)
 	_, err = db.Query(query)
+
+	if err != nil {
+		fmt.Println(err)
+	}
 	return err == nil
 }
 func GetStudentAccountStatus(Regnumber string) int {

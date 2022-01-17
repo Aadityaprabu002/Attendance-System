@@ -41,7 +41,7 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 		}
 		if err == nil {
 			student := models.Student{
-				Email:     params.Email,
+				Email:     "",
 				Password:  params.Password,
 				Regnumber: params.Regnumber,
 				Firstname: "",
@@ -79,14 +79,15 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 }
 
 func CompleteRegistration(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if IsLogged(r) {
 		session, _ := store.Get(r, "student")
 		Regnumber := session.Values["REG_NUMBER"].(string)
 		AccountStatus := admin.GetStudentAccountStatus(Regnumber)
 		if AccountStatus == 1 {
 			if r.Method == "GET" {
-				tmp, _ := template.ParseFiles("student/frontend/signin/set.html")
+				tmp, _ := template.ParseFiles("student/frontend/signin/completeRegistration.html")
 				res := admin.GetStudentDetails(Regnumber)
 				tmp.Execute(w, res)
 			} else if r.Method == "POST" {
@@ -94,8 +95,11 @@ func CompleteRegistration(w http.ResponseWriter, r *http.Request) {
 					Response: "Failed Registering",
 					Status:   0,
 				}
+
 				params := models.StudentSignup{}
 				err := json.NewDecoder(r.Body).Decode(&params)
+				fmt.Println(err)
+
 				if err == nil {
 					if params.Password[0] == params.Password[1] {
 						ImagePath := admin.SaveStudentImageData(Regnumber, params.Image)
@@ -112,7 +116,12 @@ func CompleteRegistration(w http.ResponseWriter, r *http.Request) {
 					}
 
 				}
+				json.NewEncoder(w).Encode(res)
 			}
+		} else if AccountStatus == 2 {
+			http.Redirect(w, r, "/student/dashboard", http.StatusAccepted)
+		} else {
+			http.Redirect(w, r, "/student/signin", http.StatusSeeOther)
 		}
 	}
 
