@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"html/template"
+	"time"
+)
 
 type Htmlresponse struct {
 	Response string
@@ -97,12 +100,13 @@ type StudentSessionDashBoard struct {
 
 type Attendance struct {
 	PrettyTime    string
-	ImageFilePath string
+	ImageFilePath template.URL
 }
 
 type AttendanceDetails struct {
 	StudentName string
 	Regnumber   string
+	FairImage   template.URL
 	Attendance1 Attendance
 	Attendance2 Attendance
 	Attendance3 Attendance
@@ -110,6 +114,7 @@ type AttendanceDetails struct {
 
 type TeacherSessionDashBoard struct {
 	SessionDetails PrettySession
+	Review         bool
 	TeacherName    string
 	DepartmentName string
 	CourseName     string

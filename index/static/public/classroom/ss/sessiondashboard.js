@@ -105,8 +105,11 @@ function unloadPostAttendance(){
     }
 
     let attRes = document.getElementById("attendance-response");
-    let parent = attRes.parentNode;
-    parent.removeChild(attRes);
+    if(attRes != null && typeof(attRes) != undefined){
+        let parent = attRes.parentNode;
+        parent.removeChild(attRes);
+    }
+   
     isAttBtnLoaded = false;
 }
 
@@ -124,10 +127,11 @@ function executeTimer(cur,res){
             if(modelsLoaded & !cameraLoaded){
                 camera = loadCamera(body);
                 startVideo();
-                if(isFaceVisible && isPhotoTaken && !isAttPosted && !isAttBtnLoaded){ 
-                    loadPostAttendance(camera,1);  
-                }
             }
+            if(isFaceVisible && isPhotoTaken && !isAttPosted && !isAttBtnLoaded){ 
+                    loadPostAttendance(camera,1);  
+            }
+            
         }else if(res.Popup1.getTime() + 3* MINUTE_IN_MS < cur.getTime() && cur.getTime() < res.Popup2.getTime()){
             if(modelsLoaded & cameraLoaded){
                stopVideo();
@@ -141,9 +145,9 @@ function executeTimer(cur,res){
             if(modelsLoaded & !cameraLoaded){
                 camera = loadCamera(body);
                 startVideo();
-                if(isFaceVisible && isPhotoTaken && !isAttPosted && !isAttBtnLoaded){ 
-                    loadPostAttendance(camera,2);  
-                }
+            }
+            if(isFaceVisible && isPhotoTaken && !isAttPosted && !isAttBtnLoaded){ 
+                loadPostAttendance(camera,2);  
             }
         }else if(res.Popup2.getTime() + 3* MINUTE_IN_MS < cur.getTime() && cur.getTime() < res.Popup3.getTime()){
             if(modelsLoaded & cameraLoaded){
@@ -157,10 +161,11 @@ function executeTimer(cur,res){
             if(modelsLoaded & !cameraLoaded){
                 camera = loadCamera(body);
                 startVideo();
-                if(isFaceVisible && isPhotoTaken && !isAttPosted && !isAttBtnLoaded){ 
-                    loadPostAttendance(camera,2);  
-                }
             }
+            if(isFaceVisible && isPhotoTaken && !isAttPosted && !isAttBtnLoaded){ 
+                    loadPostAttendance(camera,3);  
+            }
+            
         }else if(res.Popup3.getTime() + 3* MINUTE_IN_MS < cur.getTime()){
             if(modelsLoaded & cameraLoaded){
                stopVideo();
@@ -175,10 +180,7 @@ function executeTimer(cur,res){
     }else if(res.EndTime.getTime() < cur.getTime()){
         document.getElementById("response").innerText = "Session Ended! Redirecting in 5 seconds!";
         document.getElementById("status").innerText = "CLOSED";
-
-        // setTimeout(function(){
-        //     window.location.href = "/student/dashboard";
-        // },1000*5)
+        exitSession(0);
     }
 }
 

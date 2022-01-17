@@ -217,8 +217,9 @@ func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 				http.Redirect(w, r, "/teacher/dashboard", http.StatusSeeOther)
 			}
 			TeacherSessionDetails := GetSessionDetails(SessionId)
-			fmt.Println(TeacherSessionDetails)
+
 			tmp, _ := template.ParseFiles("classroom/frontend/ts/sessiondashboard.html")
+
 			tmp.Execute(w, TeacherSessionDetails)
 
 		} else if r.Method == "POST" {

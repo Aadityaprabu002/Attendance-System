@@ -4,7 +4,11 @@ import (
 	connections "attsys/connections"
 	keygen "attsys/keygen"
 	"attsys/models"
+	"encoding/base64"
+	"html/template"
+	"io/ioutil"
 	"math"
+	"net/http"
 
 	"database/sql"
 	"fmt"
@@ -12,6 +16,28 @@ import (
 	"strings"
 	"time"
 )
+
+func convertToBase64String(ImagePath string) string {
+	bytes, err := ioutil.ReadFile(ImagePath)
+	if err != nil {
+		fmt.Println("Error ! Image path is bad")
+		return ""
+	}
+	var base64Encoding string
+	mimeType := http.DetectContentType(bytes)
+	switch mimeType {
+	case "image/jpeg":
+		base64Encoding += "data:image/jpeg;base64,"
+	case "image/png":
+		base64Encoding += "data:image/png;base64,"
+	}
+
+	// Append the base64 encoded output
+	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
+
+	// Print the full base64 representation of the image
+	return base64Encoding
+}
 
 func randRange(min int, max int) int {
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -264,6 +290,7 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 		fmt.Println("Error retrieving teacher session dash board details")
 	}
 	var data models.TeacherSessionDashBoard
+
 	for result.Next() {
 		var temp models.Session
 		result.Scan(&data.DepartmentName, &data.CourseName, &data.TeacherName, &temp.Date, &temp.Start_time, &temp.End_time, &data.SessionDetails.Status)
@@ -271,6 +298,7 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 		data.SessionDetails.Start_time = temp.Start_time.Format("15:04:05")
 		data.SessionDetails.End_time = temp.End_time.Format("15:04:05")
 	}
+
 	query = fmt.Sprintf(`select session_key from keygen where session_id = %d`, SessionId)
 	result, err = db.Query(query)
 	if err != nil {
@@ -281,7 +309,7 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 		result.Scan(&data.SessionDetails.SessionKey)
 	}
 
-	query = fmt.Sprintf(`select concat(firstname,' ',lastname) as studentname,regnumber, attendance1,attendance1_fp ,attendance2,attendance2_fp, attendance3,attendance3_fp  from (
+	query = fmt.Sprintf(`select concat(firstname,' ',lastname) as studentname, picture,regnumber, attendance1,attendance1_fp ,attendance2,attendance2_fp, attendance3,attendance3_fp  from (
 		select * from attendance
 		left join attendance_image_table
 		using(session_id,regnumber,classroom_id)
@@ -300,16 +328,34 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 		var attTime1 time.Time
 		var attTime2 time.Time
 		var attTime3 time.Time
-		result.Scan(&attendeesData.StudentName, &attendeesData.Regnumber,
-			&attTime1, &attendeesData.Attendance1.ImageFilePath,
-			&attTime2, &attendeesData.Attendance2.ImageFilePath,
-			&attTime3, &attendeesData.Attendance3.ImageFilePath)
+		var attfp1 string
+		var attfp2 string
+		var attfp3 string
+		var fairImagePath string
+		result.Scan(&attendeesData.StudentName, &fairImagePath, &attendeesData.Regnumber,
+			&attTime1, &attfp1,
+			&attTime2, &attfp2,
+			&attTime3, &attfp3)
 
 		attendeesData.Attendance1.PrettyTime = attTime1.Format("15:04:05")
 		attendeesData.Attendance2.PrettyTime = attTime2.Format("15:04:05")
 		attendeesData.Attendance3.PrettyTime = attTime3.Format("15:04:05")
+
+		attendeesData.FairImage = template.URL(convertToBase64String(fairImagePath))
+
+		attendeesData.Attendance1.ImageFilePath = template.URL(convertToBase64String(attfp1))
+		attendeesData.Attendance2.ImageFilePath = template.URL(convertToBase64String(attfp2))
+		attendeesData.Attendance3.ImageFilePath = template.URL(convertToBase64String(attfp3))
+
 		attendeesList = append(attendeesList, attendeesData)
+
 	}
 	data.Attendees = attendeesList
+
+	if data.SessionDetails.Status == "CLOSED" {
+		data.Review = true
+	} else {
+		data.Review = false
+	}
 	return data
 }

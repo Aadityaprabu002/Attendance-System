@@ -26,7 +26,7 @@
                     <th>End time</th>
                     <th>Status</th>
                     <th>Session Key</th>
-                    <!-- Implement a timer popup -->
+                    
                 </tr>
             </thead>
             <tbody>
@@ -48,20 +48,43 @@
         <thead>
             <th>Student Name</th>
             <th>Register Number</th>
+            <th>Fair Image</th>
             <th>Attendance 1</th>
+            <th>Time</th>
             <th>Attendance 2</th>
+            <th>Time</th>
             <th>Attendance 3</th>
+            <th>Time</th>
+            {{ $Review := .Review}}
+            {{ if $Review}}
+                    <th colspan="2">Review </th>
+            {{ end }}
         </thead>
         <tbody>
-            {{range .AttendeesList}}
-            <td>{{.StudentName}}</td>
-            <td>{{.Regnumber}}</td>
-            <td><img src="{{.Attendance1.ImageFilePath}}" alt="N/A" height="100" width="120"></td>
-            <td><img src="{{.Attendance2.ImageFilePath}}" alt="N/A" height="100" width="120"></td>
-            <td><img src="{{.Attendance3.ImageFilePath}}" alt="N/A" height="100" width="120"></td>
-            {{end}}
+            {{ range .Attendees }}
+            <td>{{ .StudentName }}</td>
+            <td>{{ .Regnumber }}</td>
+            <td> <img src="{{ .FairImage }}"  alt="Blank"  height="70" width="120" ></td>
+            <td><img src = '{{ .Attendance1.ImageFilePath }}'   alt="Blank" height="70" width="120"></td>       
+            <td>{{ .Attendance1.PrettyTime }}</td>
+            <td><img src="{{ .Attendance2.ImageFilePath }}" alt="Blank" height="100" width="120"></td>
+            <td>{{ .Attendance2.PrettyTime }}</td>
+            <td><img src="{{ .Attendance3.ImageFilePath }}" alt="Blank" height="100" width="120"></td>
+            <td>{{ .Attendance3.PrettyTime }}</td>
+            {{ if $Review }}
+                <td> 
+                    <input type="radio" id="{{  .Regnumber }}" name="attendance" value="30">
+                    <label for="age1">Absent</label><br>
+                </td>
+                <td>
+                    <input type="radio" id="{{  .Regnumber }}" name="attendance" value="60">
+                    <label for="age2">Present</label><br>  
+                </td>
+            {{ end }}
+            {{ end }}
         </tbody>
     </table>
+
     <script src="/static/classroom/ts/sessiondashboard.js"></script>
 </body>
 </html>
