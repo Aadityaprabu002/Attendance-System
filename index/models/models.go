@@ -89,6 +89,7 @@ type PrettySession struct {
 	End_time   string
 	Status     string
 	SessionKey string
+	Reviewed   bool
 }
 
 type StudentSessionDashBoard struct {
@@ -110,11 +111,12 @@ type AttendanceDetails struct {
 	Attendance1 Attendance
 	Attendance2 Attendance
 	Attendance3 Attendance
+	IsPresent   bool
 }
 
 type TeacherSessionDashBoard struct {
 	SessionDetails PrettySession
-	Review         bool
+
 	TeacherName    string
 	DepartmentName string
 	CourseName     string

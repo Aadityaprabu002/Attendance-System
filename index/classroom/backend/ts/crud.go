@@ -5,6 +5,7 @@ import (
 	keygen "attsys/keygen"
 	"attsys/models"
 	"encoding/base64"
+	"encoding/json"
 	"html/template"
 	"io/ioutil"
 	"math"
@@ -271,7 +272,7 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 		fmt.Println("failed to establish connection with sql")
 	}
 	defer db.Close()
-	query := fmt.Sprintf(`select d.department_name,c.course_name,concat(t.firstname,' ',t.lastname) as teachername,session_date,start_time,end_time,session_status 
+	query := fmt.Sprintf(`select d.department_name,c.course_name,concat(t.firstname,' ',t.lastname) as teachername,session_date,start_time,end_time,session_status,reviewed
 	from (
 			select * from classrooms
 			inner join sessions
@@ -293,7 +294,7 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 
 	for result.Next() {
 		var temp models.Session
-		result.Scan(&data.DepartmentName, &data.CourseName, &data.TeacherName, &temp.Date, &temp.Start_time, &temp.End_time, &data.SessionDetails.Status)
+		result.Scan(&data.DepartmentName, &data.CourseName, &data.TeacherName, &temp.Date, &temp.Start_time, &temp.End_time, &data.SessionDetails.Status, &data.SessionDetails.Reviewed)
 		data.SessionDetails.Date = temp.Date.Format("2006-01-02")
 		data.SessionDetails.Start_time = temp.Start_time.Format("15:04:05")
 		data.SessionDetails.End_time = temp.End_time.Format("15:04:05")
@@ -309,7 +310,7 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 		result.Scan(&data.SessionDetails.SessionKey)
 	}
 
-	query = fmt.Sprintf(`select concat(firstname,' ',lastname) as studentname, picture,regnumber, attendance1,attendance1_fp ,attendance2,attendance2_fp, attendance3,attendance3_fp  from (
+	query = fmt.Sprintf(`select concat(firstname,' ',lastname) as studentname, picture,regnumber, attendance1,attendance1_fp ,attendance2,attendance2_fp, attendance3,attendance3_fp, ispresent from (
 		select * from attendance
 		left join attendance_image_table
 		using(session_id,regnumber,classroom_id)
@@ -318,6 +319,7 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 		using(regnumber);
 	`, SessionId)
 	result, err = db.Query(query)
+
 	if err != nil {
 		fmt.Println("Error retrieving student attending session details")
 		return data
@@ -335,7 +337,8 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 		result.Scan(&attendeesData.StudentName, &fairImagePath, &attendeesData.Regnumber,
 			&attTime1, &attfp1,
 			&attTime2, &attfp2,
-			&attTime3, &attfp3)
+			&attTime3, &attfp3,
+			&attendeesData.IsPresent)
 
 		attendeesData.Attendance1.PrettyTime = attTime1.Format("15:04:05")
 		attendeesData.Attendance2.PrettyTime = attTime2.Format("15:04:05")
@@ -351,12 +354,6 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 
 	}
 	data.Attendees = attendeesList
-
-	if data.SessionDetails.Status == "CLOSED" {
-		data.Review = true
-	} else {
-		data.Review = false
-	}
 	return data
 }
 
@@ -375,4 +372,28 @@ func IsSessionReviewed(SessionId int) bool {
 		result.Scan(&isReviewed)
 	}
 	return isReviewed
+}
+
+func ReviewAndSetAttendance(ClassroomId int, SessionId int, Attendance []models.ReviewAttendance) bool {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+		return false
+	}
+	defer db.Close()
+	JsonAttendance, _ := json.Marshal(Attendance)
+	query := fmt.Sprintf(`
+		call set_attendance(%d,%d,'%s')
+	`, ClassroomId, SessionId, string(JsonAttendance))
+	_, err = db.Query(query)
+	if err == nil {
+		query = fmt.Sprintf(`update table sessions
+				 set reviewed = true
+				 where session_id = %d 
+		`, SessionId)
+		_, err = db.Query(query)
+		return err == nil
+	}
+	return false
 }

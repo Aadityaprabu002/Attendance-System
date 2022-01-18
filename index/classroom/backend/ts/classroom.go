@@ -231,12 +231,13 @@ func SessionDashboard(w http.ResponseWriter, r *http.Request) {
 
 func PostAttendance(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	res := models.Htmlresponse{
-		Response: "Failed Posting attendance",
-		Status:   0,
-	}
+	fmt.Println("HIT")
 	if teacher.IsLogged(r) {
 		if r.Method == "POST" {
+			res := models.Htmlresponse{
+				Response: "Failed Posting attendance",
+				Status:   0,
+			}
 			params := mux.Vars(r)
 			session, _ := store.Get(r, "teacher")
 			TeacherId := session.Values["TEACHER_ID"].(string)
@@ -245,12 +246,22 @@ func PostAttendance(w http.ResponseWriter, r *http.Request) {
 			if isAuthenticClassroom(TeacherId, ClassroomId) && isAuthenticSession(TeacherId, ClassroomId, SessionId) {
 				if !IsSessionReviewed(SessionId) {
 					Attendance := []models.ReviewAttendance{}
-					json.NewDecoder(r.Body).Decode(&Attendance)
-					fmt.Println(Attendance)
-					res.Response = "list Received Successfully"
-					res.Status = 1
+					err := json.NewDecoder(r.Body).Decode(&Attendance)
+					if err != nil {
+						fmt.Println("Error decoding student presense list")
+					} else {
+						fmt.Println(Attendance)
+						if ReviewAndSetAttendance(ClassroomId, SessionId, Attendance) {
+							res.Response = "Attendance Reviewed and set successfully!"
+							res.Status = 1
+						} else {
+							res.Response = "Failed Reviewing and Setting Attendance!"
+						}
+
+					}
 				}
 			}
+			fmt.Println(res)
 			json.NewEncoder(w).Encode(res)
 		}
 	}

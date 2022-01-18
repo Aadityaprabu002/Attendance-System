@@ -13,7 +13,7 @@ import (
 )
 
 func IsLogged(r *http.Request) bool {
-	session, _ := store.Get(r, "student")
+	session, _ := store.Get(r, "teacher")
 	return !session.IsNew && session.Values["TEACHER_ID"] != nil
 }
 

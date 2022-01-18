@@ -26,7 +26,8 @@
                     <th>End time</th>
                     <th>Status</th>
                     <th>Session Key</th>
-                    
+                    <th>Reviewed</th>
+
                 </tr>
             </thead>
             <tbody>
@@ -39,6 +40,12 @@
                     <td>{{.SessionDetails.End_time}}</td>
                     <td>{{.SessionDetails.Status}}</td>
                     <td>{{.SessionDetails.SessionKey}}</td>
+                    {{ $Reviewed := .SessionDetails.Reviewed }}
+                    {{ if $Reviewed }}
+                        <td> Yes </td>
+                    {{ else }}
+                        <td> No</td>
+                    {{end}}
                 </tr>
             </tbody>
     </table>
@@ -55,39 +62,49 @@
             <th>Time</th>
             <th>Attendance 3</th>
             <th>Time</th>
-            {{ $Review := .Review}}
-            {{ if $Review}}
-                    <th colspan="2">Review </th>
+            {{ $Reviewed := .SessionDetails.Reviewed }}
+            {{ $Status := .SessionDetails.Status}}
+            {{if and (eq $Status "CLOSED") ( not ( $Reviewed )) }}
+                <th colspan="2">Review</th>
+            {{else if and (eq $Status "CLOSED") ( $Reviewed ) }}
+                <th colspan="2">Reviewed</th>    
             {{ end }}
         </thead>
         <tbody>
             {{ range .Attendees }}
-            <td>{{ .StudentName }}</td>
-            <td>{{ .Regnumber }}</td>
-            <td> <img src="{{ .FairImage }}"  alt="Blank"  height="70" width="120" ></td>
-            <td><img src = '{{ .Attendance1.ImageFilePath }}'   alt="Blank" height="70" width="120"></td>       
-            <td>{{ .Attendance1.PrettyTime }}</td>
-            <td><img src="{{ .Attendance2.ImageFilePath }}" alt="Blank" height="100" width="120"></td>
-            <td>{{ .Attendance2.PrettyTime }}</td>
-            <td><img src="{{ .Attendance3.ImageFilePath }}" alt="Blank" height="100" width="120"></td>
-            <td>{{ .Attendance3.PrettyTime }}</td>
-            {{ if $Review }}
-                <td> 
-                    <input type="radio" id = "attendance" name="{{ .Regnumber }}" value="ABSENT" >
-                    <label for="{{ .Regnumber }}">Absent</label><br>
-                </td>
-                <td>
-                    <input type="radio" id = "attendance" name="{{ .Regnumber }}" value="PRESENT">
-                    <label for="{{ .Regnumber }}">Present</label><br>  
-                </td>
-            {{ end }}
+                <td>{{ .StudentName }}</td>
+                <td>{{ .Regnumber }}</td>
+                <td> <img src="{{ .FairImage }}"  alt="Blank"  height="70" width="120" ></td>
+                <td><img src = '{{ .Attendance1.ImageFilePath }}'   alt="Blank" height="70" width="120"></td>       
+                <td>{{ .Attendance1.PrettyTime }}</td>
+                <td><img src="{{ .Attendance2.ImageFilePath }}" alt="Blank" height="100" width="120"></td>
+                <td>{{ .Attendance2.PrettyTime }}</td>
+                <td><img src="{{ .Attendance3.ImageFilePath }}" alt="Blank" height="100" width="120"></td>
+                <td>{{ .Attendance3.PrettyTime }}</td>
+                {{if and (eq $Status "CLOSED") ( not ( $Reviewed )) }}
+                    <td> 
+                        <input type="radio" id = "attendance" name="{{ .Regnumber }}" value="ABSENT" >
+                        <label for="{{ .Regnumber }}">Absent</label><br>
+                    </td>
+                    <td>
+                        <input type="radio" id = "attendance" name="{{ .Regnumber }}" value="PRESENT">
+                        <label for="{{ .Regnumber }}">Present</label><br>  
+                    </td>
+                {{else if and (eq $Status "CLOSED") ( $Reviewed ) }}
+                    {{ if .IsPresent }}   
+                        <td>Present</td>
+                    {{ else }}  
+                        <td>Absent</td>  
+                    {{ end}}
+                {{ end }}
             {{ end }}
         </tbody>
-        {{ if $Review }}
+
+        {{if and (eq $Status "CLOSED") ( not ( $Reviewed )) }}
          <div id="response"></div>
          <button id="post-attendance-btn" type="button">POST ATTENDANCE</button>
         {{ end }}
-    </table>
+    </table> 
 
     <script src="/static/classroom/ts/sessiondashboard.js"></script>
 </body>
