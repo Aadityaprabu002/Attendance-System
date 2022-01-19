@@ -6,76 +6,84 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 
 <body>
-    <table>
-        <tr>
-            <th>Department Id</th>
-            <td>
-                <input type="text" id="department-id">
-            </td>
-        </tr>
-        <tr>
-            <th>Course Id</th>
-            <td>
-                <input type="text" id="course-id">
-            </td>
-        </tr>
-        <tr>
-            <th>
-                From date
-            </th>
-            <td>
-                <input type="date" id="from-date">
-            </td>
-        </tr>
-        <tr>
-            <th>
-                To date
-            </th>
-            <td>
-                <input type="date" id="to-date">
-            </td>
-        </tr>
-        <tr >
-            <th colspan="2">
-                <button type="button" id="submitBtn">Add Classroom</button>
-            </th>
-        </tr>
-        <tr>
-            <td colspan="2" id="classroom-response"></td>
-        </tr>
-    </table>
-        
-    <table id="classroom-table">
-        <caption>YOUR CLASSROOMS</caption>
-        <thead>
+    <div class="container">
+        <h2 class="text-center">Your classrooms</h2>
+        <table class="table table-borderless table-striped table-dark " id="classroom-table">
+            <caption>YOUR CLASSROOMS</caption>
+            <thead>
+                <tr>
+                    <th>CLASSROOM ID</th>
+                    <th>DEPARTMENT ID</th>
+                    <th>COURSE ID</th>
+                    <th>SESSION</th>
+                    <th>FROM</th>
+                    <th>TO</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Classrooms}}
+                <tr>
+                    <td>{{.ClassroomId}}</td>
+                    <td>{{.DepartmentId}}</td>
+                    <td>{{.CourseId}}</td>
+                    <td><button id="session" class="btn btn-primary"
+                            onclick="window.location.href = '/teacher/dashboard/classroomdashboard/{{.ClassroomId}}'">OPEN</button>
+                    </td>
+                    <td>{{ .From.Format "2006-01-02" }}</td>
+                    <td>{{ .To.Format "2006-01-02" }}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+    <div class="container">
+        <table class="table table-bordered" >
             <tr>
-                <th>CLASSROOM ID</th>
-                <th>DEPARTMENT ID</th>
-                <th>COURSE ID</th>
-                <th>SESSION</th>
-                <th>FROM</th>
-                <th>TO</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{range .Classrooms}}
-            <tr>
-                <td>{{.ClassroomId}}</td>
-                <td>{{.DepartmentId}}</td>
-                <td>{{.CourseId}}</td>
-                <td><button id="session"
-                        onclick="window.location.href = '/teacher/dashboard/classroomdashboard/{{.ClassroomId}}'">OPEN</button>
+                <td>Department Id</td>
+                <td>
+                    <input type="text" id="department-id">
                 </td>
-                <td>{{ .From.Format "2006-01-02" }}</td>
-                <td>{{ .To.Format "2006-01-02" }}</td>
             </tr>
-            {{end}}
-        </tbody>
-    </table>
+            <tr>
+                <td>Course Id</td>
+                <td>
+                    <input type="text" id="course-id">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    From date
+                </td>
+                <td>
+                    <input type="date" id="from-date">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    To date
+                </td>
+                <td>
+                    <input type="date" id="to-date">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button type="button" id="submitBtn" class="btn btn-success">Add Classroom</button>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" id="classroom-response"></td>
+            </tr>
+        </table>
+    </div>
+   
     <script src="/static/classroom/ts/dashboard.js"></script>
+
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
         integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
         crossorigin="anonymous"></script>
@@ -87,20 +95,24 @@
         crossorigin="anonymous"></script>
     <script type="text/javascript" charset="utf8"
         src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
-        <script>
-            $(document).ready(function () {
-                $('#classroom-table').DataTable();
+    <script>
+        $(document).ready(function () {
+            $('#classroom-table').DataTable();
+        });
+        $(document).ready(function ($) {
+            $(".clickable-row").click(function () {
+                window.open($(this).data("href"), '_blank');
             });
-            $(document).ready(function ($) {
-                $(".clickable-row").click(function () {
-                    window.open($(this).data("href"), '_blank');
-                });
-            });
-    
-          
-    
-    
-        </script>
+        });
+    </script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>

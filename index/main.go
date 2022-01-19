@@ -55,6 +55,7 @@ func initRouter() {
 	public.HandleFunc("/student/signin", student.Signin)
 	public.HandleFunc("/student/signin/complete_registration", student.CompleteRegistration)
 	public.HandleFunc("/teacher/signin", teacher.Signin)
+	public.HandleFunc("/teacher/signout", teacher.Signout)
 	public.HandleFunc("/teacher/dashboard", teacher_classroom.Dashboard)
 	public.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}", teacher_classroom.ClassroomDashboard)
 	public.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}/handlestudents", teacher_classroom.Handlestudents).Methods("POST")

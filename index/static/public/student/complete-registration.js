@@ -37,9 +37,25 @@ function completeRegistration(){
     let email = document.querySelector("#email").value; 
     let p = document.querySelectorAll("#password"); 
     let password = [];
-    for(let i=0;i<p.length;i++){
-        password[i] = p[i].value;
+    var re = /\S+@\S+\.\S+/;
+    if(!re.test(email)){
+        document.getElementById('response').innerHTML = 'Enter valid email!';
+        return;
     }
+    for(let i=0;i<p.length;i++){
+        password[i] = String(p[i].value);
+    }
+    re = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/;
+
+    if (password[0]!=password[1]){
+        document.getElementById('response').innerHTML = "Password doesnt match!";
+        return;
+    }
+    if(!password[0].match(re)){
+        document.getElementById('response').innerHTML = "Password must be between 8 to 15 characters which contain at least one lowercase letter, one uppercase letter, one numeric digit, and one special character";
+        return;
+    }
+   
     let obj = JSON.stringify({
         "email":email,
         "password":password,

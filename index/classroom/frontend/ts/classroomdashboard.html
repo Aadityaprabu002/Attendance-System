@@ -6,89 +6,107 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 
-<body>
-    <table>
-        <tr>
-            <td>Start Time</td>
-            <td><input type="time" id="start_time"></td>
-        </tr>
-        <tr>
-            <td>End Time</td>
-            <td><input type="time" id="end_time"></td>
-        </tr>
-        <tr>
-            <td colspan="2" align="center"> <button type="button" id="submitBtn">Start</button></td>
-        </tr>
-        <tr>
-            <td colspan="2" align="center">
-                <p id="response"></p>
-            </td>
-        </tr>
-    </table>
+<body style="background-color: azure;">
+    <div class="container flex-row">
+        <h2 class="text-center">Your Sessions</h2>
+        <div>
+            <table id="session-table" class="table table-borderless table-dark table-striped">
+                <thead>
+                    <tr>
+                        <th>SESSION DATE</th>
+                        <th>START TIME</th>
+                        <th>END TIME</th>
+                        <th>STATUS</th>
+                        <th>DETAILS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Sessions}}
+                    <tr>
+                        <td>{{.Date.Format "2006-01-02"}}</td>
+                        <td>{{.Start_time.Format "15:04:05"}}</td>
+                        <td>{{.End_time.Format "15:04:05"}}</td>
+                        <td>{{.Status}}</td>
+                        <td><button id="session" class="btn btn-primary"
+                                onclick="window.location.href += '/sessiondashboard/{{.SessionId}}'">OPEN</button></td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <table class="table table-bordered" style="width: 30%;">
+                <tr>
+                    <td>Start Time</td>
+                    <td><input type="time" id="start_time"></td>
+                </tr>
+                <tr>
+                    <td>End Time</td>
+                    <td><input type="time" id="end_time"></td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="center"> <button type="button" class="btn btn-primary"
+                            id="submitBtn">Start</button></td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="center">
+                        <p id="response"></p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="container">
+        <h2>Student belonging to this classroom</h2>
+        <table id="student-table" class="table table-borderless">
 
-    <caption>YOUR SESSIONS</caption>
-    <table id="session-table">
-        <thead>
+            <thead>
+                <th>Student Name</th>
+                <th>Register Number</th>
+                <th>Image</th>
+                <th>Email</th>
+            </thead>
+            <tbody>
+                {{ range .Students }}
+                <tr>
+                    <td>{{ .Studentname }}</td>
+                    <td>{{ .Regnumber }}</td>
+                    <td><img src='{{ .Image }}' onerror='this.src ="/static/classroom/assets/noimage.jpg"'
+                            alt="No Attended" height="100" width="120"></td>
+                    <td>{{ .Email }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+
+        </table>
+
+    </div>
+    <div class="container">
+        <table class="table table-bordered" style="width: 50%;">
             <tr>
-                <th>SESSION DATE</th>
-                <th>START TIME</th>
-                <th>END TIME</th>
-                <th>STATUS</th>
-                <th>DETAILS</th>
+                <td><input type="text" id="add-student" placeholder="yyyyxxzzzz"></td>
+                <th> <button type="button" id="add-student-btn" class="btn btn-success">Add student</button></th>
+                <td id="add-student-response"></td>
             </tr>
-        </thead>
-        <tbody>
-            {{range .Sessions}}
             <tr>
-                <td>{{.Date.Format "2006-01-02"}}</td>
-                <td>{{.Start_time.Format "15:04:05"}}</td>
-                <td>{{.End_time.Format "15:04:05"}}</td>
-                <td>{{.Status}}</td>
-                <td><button id="session"
-                        onclick="window.location.href += '/sessiondashboard/{{.SessionId}}'">OPEN</button></td>
+                <td><input type="text" id="remove-student" placeholder="yyyyxxzzzz"></td>
+                <th><button type="button" id="remove-student-btn" class="btn btn-danger"> Remove Student </button></th>
+                <td id="remove-student-response"></td>
             </tr>
-            {{end}}
-        </tbody>
-    </table>
-    
-    <table id="student-table">
-        <caption>Student belonging to this classroom</caption>
-        <thead>
-            <th>Student Name</th>
-            <th>Register Number</th>
-            <th>Image</th>
-            <th>Email</th>
-        </thead>
-        <tbody>
-            {{ range .Students }}
-                <td>{{ .Studentname }}</td>
-                <td>{{ .Regnumber }}</td>
-                <td><img src = '{{ .Image }}' onerror = 'this.src ="/static/classroom/assets/noimage.jpg"'  alt="No Attended" height="100" width="120"></td>
-                <td>{{ .Email }}</td>
-            {{ end }}
-        </tbody>
-
-    </table> 
+        </table>
 
 
 
-    <table>
-        <tr>
-            <td><input type="text" id="add-student"></td>
-            <th> <button type="button" id="add-student-btn" >Add student</button></th>
-            <td id="add-student-response"></td>
-        </tr>
-        <tr>
-            <td><input type="text" id="remove-student"></td>
-            <th><button type="button" id="remove-student-btn" > Remove Student </button></th>
-            <td id="remove-student-response"></td>
-        </tr>
-    </table>
-
+    </div>
 
     <script src="/static/classroom/ts/classroomdashboard.js"></script>
+
+
+
 
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
         integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
@@ -122,6 +140,12 @@
 
 
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>

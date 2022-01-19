@@ -37,12 +37,12 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 					tmp, _ := template.ParseFiles("classroom/frontend/ss/dashboard.html")
 					temp := admin.GetStudentDetails(Regnumber)
 					Student := models.StudentsDetails{
-						Studentname: temp.Firstname + temp.Lastname,
-						Regnumber:   temp.Regnumber,
+						Studentname: temp.Firstname + " " + temp.Lastname,
+						Regnumber:   Regnumber,
 						Image:       template.URL(convertToBase64String(temp.Image)),
 						Email:       temp.Email,
 					}
-					tmp.Execute(w, Student)
+					fmt.Println(tmp.Execute(w, Student))
 				} else if r.Method == "POST" {
 					var newJoinee models.Joinee
 					msg := models.Htmlresponse{

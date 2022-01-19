@@ -71,3 +71,18 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(msg)
 	}
 }
+func Signout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if r.Method == "GET" {
+		session, _ := store.Get(r, "teacher")
+		if IsLogged(r) {
+			if session.Values["TEACHER_ID"] != nil {
+				session.Values["REG_NUMBER"] = nil
+			}
+		}
+		session.Options.MaxAge = -1
+		session.Save(r, w)
+		http.Redirect(w, r, "/teacher/signin", http.StatusSeeOther)
+	}
+
+}

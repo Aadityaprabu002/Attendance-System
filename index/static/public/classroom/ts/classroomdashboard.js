@@ -30,13 +30,13 @@ function submitForm(){
     dt = new Date(dt);
 
     if (st.getTime() > et.getTime()){
-        document.querySelector("#response").innerHTML = "Start time greater than end time! javascript";
+        document.querySelector("#response").innerHTML = "Start time greater than end time! ";
         return;
     }else if( et.getTime() - st.getTime() > MAX_SESSION_HOUR * 60 * 60 * 1000 ){
-        document.querySelector("#response").innerHTML = "Session time greater than 4 hours! javascript";
+        document.querySelector("#response").innerHTML = "Session time greater than 4 hours! ";
         return;
     }else if( et.getTime() - st.getTime() < MIN_SESSION_MINUTE * 60 * 1000){
-        document.querySelector("#response").innerHTML = "Session time less than 20 minutes! javascript";
+        document.querySelector("#response").innerHTML = "Session time less than 20 minutes! ";
         return;
     }
 

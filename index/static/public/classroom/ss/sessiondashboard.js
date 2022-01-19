@@ -117,7 +117,7 @@ function executeTimer(cur,res){
 
     if(res.StartTime.getTime() <= cur.getTime() && cur.getTime() < res.EndTime.getTime()){ 
         let diff = res.EndTime.getTime() - cur.getTime();
-        document.getElementById("response").innerHTML = humanReadableTimeFormat(diff);
+        document.getElementById("timer").innerHTML = humanReadableTimeFormat(diff);
         let body = document.getElementsByTagName("body")[0];
         if(cur.getTime() < res.Popup1.getTime()){
             return;
@@ -177,10 +177,13 @@ function executeTimer(cur,res){
     }else if(cur.getTime() < res.StartTime.getTime()){
         document.getElementById("response").innerText = "Session not yet started!";
     }else if(res.EndTime.getTime() < cur.getTime()){
-        document.getElementById("response").innerText = "Session Ended! Redirecting in 5 seconds!";
+        document.getElementById("timer").innerText = "";
         document.getElementById("status").innerText = "CLOSED";
+        document.getElementById("response").innerText = "Session Ended! Redirecting in 5 seconds!";
+        
         exitSession(0);
     }
+  
 }
 
 
