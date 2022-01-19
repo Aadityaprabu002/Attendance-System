@@ -1,92 +1,4 @@
 
-
-// //face detection
-// var canSet = false; // bool to set isFaceVisible
-// var isFaceVisible = false; // bool to detect face
-
-// Promise.all(
-//     [
-//         faceapi.nets.tinyFaceDetector.loadFromUri('/static/camera/facedetection/models'),
-//         faceapi.nets.faceLandmark68Net.loadFromUri('/static/camera/facedetection/models'),
-//         faceapi.nets.faceRecognitionNet.loadFromUri('/static/camera/facedetection/models'),
-//         faceapi.nets.faceExpressionNet.loadFromUri('/static/camera/facedetection/models')
-//     ]
-// ).then(startVideo);
-
-
-// // video 
-
-// const player = document.getElementById('player');
-// player.removeAttribute('controls') ;  
-
-// //canvas
-// const canvas = document.getElementById('canvas');
-// const context = canvas.getContext('2d');
-
-// //capture button
-// const captureButton = document.getElementById('capture');
-
-// const constraints = {
-//     video: true,
-// };
-
-// // start video
-// function startVideo(){
-//     canSet = true;
-//     navigator.mediaDevices.getUserMedia(constraints)
-//         .then((stream) => {
-//         player.srcObject = stream;
-//     });
-// }
-
-// player.addEventListener('play',()=>{
-//     console.log("Video started");
-//     setInterval(async () =>{
-//         const detections = await faceapi.detectAllFaces(player,
-//         new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks()
-//         if(detections.length == 0 && canSet ){
-//             isFaceVisible = false;
-//             document.getElementById('face-detection').innerHTML = 'No face detected!';
-//         }
-//         else if(canSet){
-//             isFaceVisible = true;
-//             document.getElementById('face-detection').innerHTML = 'Face detected!';
-//         }
-//     },100)
-// });
-
-
-// // stop video
-// function stopVideo(){
-//     canSet = false;
-//     player.srcObject.getVideoTracks().forEach(track => track.stop());
-//     player.pause();
-//     player.style.display = 'none';
-// }
-// player.addEventListener('pause',()=>{
-//     console.log('Video stopped');
-// })
-
-
-
-// captureButton.addEventListener('click', () => {
-//     // Draw the video frame to the canvas.
-//     if(captureButton.value == "1"){
-//         console.log('Camera enabled');
-//         startVideo();
-//         player.style.display = '';
-//         captureButton.innerText = 'Capture';
-//         captureButton.value = "0";
-//     }else{
-//         console.log('Camera disabled');
-//         context.drawImage(player, 0, 0, canvas.width, canvas.height);
-//         stopVideo();
-//         captureButton.innerText = 'Retake';
-//         captureButton.value = "1";
-//     }
-// });
-
-
 // form and ajax
 function sendRequest(obj){
     xhr = new XMLHttpRequest();
@@ -102,27 +14,56 @@ function sendRequest(obj){
 }
 
 function submitForm(){
-    // if(!isFaceVisible){
-    //     document.getElementById('response').innerHTML = 'Form can not be submitted since no face was detected!';
-    //     return;
-    // }
-    // let image64 = document.getElementById("canvas").toDataURL('image/png');
+
     let fname = document.querySelector("#fname").value;
     let lname = document.querySelector("#lname").value;
     let regnumber = document.querySelector("#rollno").value
     let p = document.querySelectorAll("#password"); 
     let password = [];
-    for(let i=0;i<p.length;i++){
-        password[i] = p[i].value;
+    var re = /^[A-Za-z]+$/;
+  
+    if(fname.length == 0 && fname.length <= 2 || fname.length > 20){
+        document.getElementById('response').innerHTML = "First name can't be empty and should be of length between 2 to 20";
+        return;
     }
-    // let email = document.querySelector("#email").value; 
+    if(!re.test(fname)){
+        document.getElementById('response').innerHTML = "First name can only have characters";
+        return;
+    } 
+
+    if(lname.length!=0){
+        if(lname.length <= 2){
+            document.getElementById('response').innerHTML = "Last name should be of length between 2 to 20 if there";
+            return;
+        }
+        if(!re.test(lname)){
+            document.getElementById('response').innerHTML = "Last name can only have characters";
+            return
+        } 
+    }
+    if (regnumber.length !=10){
+        document.getElementById('response').innerHTML = "Regnumber should be having 10 digits";
+        return;
+    }
+    for(let i=0;i<p.length;i++){
+        password[i] = String(p[i].value);
+    }
+    var re = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/;
+
+    if (password[0]!=password[1]){
+        document.getElementById('response').innerHTML = "Password doesnt match!";
+        return;
+    }
+    if(!password[0].match(re)){
+        document.getElementById('response').innerHTML = "Password must be between 8 to 15 characters which contain at least one lowercase letter, one uppercase letter, one numeric digit, and one special character";
+        return;
+    }
+
 
     let obj = JSON.stringify({
        "firstname": fname,
        "lastname": lname,
        "password": password,
-    //    "email": email,
-    //    "image64":image64,
        "regnumber":regnumber
     })
 
