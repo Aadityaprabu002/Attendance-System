@@ -8,8 +8,8 @@ import (
 
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
-	"text/template"
 
 	"github.com/gorilla/sessions"
 )
@@ -35,7 +35,14 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 			} else {
 				if r.Method == "GET" {
 					tmp, _ := template.ParseFiles("classroom/frontend/ss/dashboard.html")
-					tmp.Execute(w, nil)
+					temp := admin.GetStudentDetails(Regnumber)
+					Student := models.StudentsDetails{
+						Studentname: temp.Firstname + temp.Lastname,
+						Regnumber:   temp.Regnumber,
+						Image:       template.URL(convertToBase64String(temp.Image)),
+						Email:       temp.Email,
+					}
+					tmp.Execute(w, Student)
 				} else if r.Method == "POST" {
 					var newJoinee models.Joinee
 					msg := models.Htmlresponse{
@@ -48,7 +55,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 					}
 					if SessionId := isValidSessionKey(newJoinee.SessionKey); SessionId != 0 {
 						Regnumber := session.Values["REG_NUMBER"].(string)
-						if IsStudentBelongsToClassroom(Regnumber, SessionId) {
+						if IsStudentBelongsToSession(Regnumber, SessionId) {
 							session.Values["SESSION_KEY"] = newJoinee.SessionKey
 							session.Save(r, w)
 							msg.Status = 1

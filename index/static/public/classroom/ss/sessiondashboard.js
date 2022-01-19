@@ -37,7 +37,7 @@ function exitSession(exitCount){
             }
         }
     }
-    xhr.open("POST","/student/dashboard/session/exitsession");
+    xhr.open("GET",window.location.href+"/endsession");
     xhr.setRequestHeader("content-type","application/json")
     xhr.send(null);
 }
@@ -116,7 +116,6 @@ function unloadPostAttendance(){
 function executeTimer(cur,res){
 
     if(res.StartTime.getTime() <= cur.getTime() && cur.getTime() < res.EndTime.getTime()){ 
-      
         let diff = res.EndTime.getTime() - cur.getTime();
         document.getElementById("response").innerHTML = humanReadableTimeFormat(diff);
         let body = document.getElementsByTagName("body")[0];
@@ -220,3 +219,12 @@ function getSessionDetails(){
 } 
 
 getSessionDetails();
+
+
+var exitSessionBtn = document.getElementById("exit-session-btn");
+exitSessionBtn.addEventListener("click",
+function(){
+    if(confirm("Are you sure you want to exit the session?")){
+        exitSession(0);
+    }
+})

@@ -57,3 +57,75 @@ var btn = document.getElementById("submitBtn");
 btn.addEventListener("click",submitForm)
 
 
+
+function addStudent(){
+     let regnumber = document.getElementById("add-student").value;
+     if (regnumber.length != 10){
+         document.getElementById("add-student-response").innerText = "Regnumber length should be 10";
+         return;
+     }
+     let obj = JSON.stringify({
+         "regnumber":regnumber,
+         "code":1
+     });
+
+     xhr = new XMLHttpRequest();
+     xhr.onreadystatechange = function(){
+         if(this.readyState == 4 && this.status == 200){
+             var result = JSON.parse(this.responseText);
+             console.log(result.Response);
+             switch(result.Status){
+                 case 0 : document.querySelector("#add-student-response").innerHTML =  result.Response; break;
+                 case 1 : 
+                 document.querySelector("#add-student-response").innerHTML =  result.Response;
+                 setTimeout(function(){
+                     window.location.reload(); 
+                 },5*1000)
+                 break;
+             }
+         }
+     }
+     xhr.open("POST",window.location.href+'/handlestudents');
+     xhr.setRequestHeader("content-type","application/json")
+     xhr.send(obj);     
+}
+
+function removeStudent(){
+    let regnumber = document.getElementById("remove-student").value;
+    if (regnumber.length != 10){
+        document.getElementById("remove-student-response").innerText = "Regnumber length should be 10";
+        return;
+    }
+    let obj = JSON.stringify({
+        "regnumber":regnumber,
+        "code":2
+    });
+
+    xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(){
+        if(this.readyState == 4 && this.status == 200){
+            var result = JSON.parse(this.responseText);
+            console.log(result.Response);
+            switch(result.Status){
+                case 0 : document.querySelector("#remove-student-response").innerHTML =  result.Response; break;
+                case 1 : 
+                    document.querySelector("#remove-student-response").innerHTML =  result.Response;
+                    setTimeout(function(){
+                        window.location.reload(); 
+                    },5*1000)
+                    break;
+            }
+        }
+    }
+    xhr.open("POST",window.location.href+'/handlestudents');
+    xhr.setRequestHeader("content-type","application/json")
+    xhr.send(obj);
+
+    
+}
+
+var addStudentBtn = document.getElementById("add-student-btn");
+addStudentBtn.addEventListener("click",addStudent);
+
+var removeStudentBtn = document.getElementById("remove-student-btn");
+removeStudentBtn.addEventListener("click",removeStudent);

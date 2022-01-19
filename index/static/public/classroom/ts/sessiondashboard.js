@@ -5,10 +5,15 @@ function sendRequest(obj){
         if(this.readyState == 4 && this.status == 200){
             var result = JSON.parse(this.responseText);
             console.log(result.Response);
-            // switch(result.Status){
-            //     case 0 : document.querySelector("#response").innerHTML =  result.Response; break;
-            //     case 1 : window.location.href = "/teacher/dashboard"; break;
-            // }
+            switch(result.Status){
+                case 0 : document.querySelector("#response").innerHTML =  result.Response; break;
+                case 1 : 
+                    document.querySelector("#response").innerHTML =  result.Response + "Refreshing in 5 secs.."; 
+                    setTimeout(function(){
+                        window.location.reload();   
+                    },5000);
+                    break;
+            }
         }
     }
     xhr.open("POST",window.location.href + "/postattendance");
@@ -40,13 +45,17 @@ function postAttendance(){
             d2["is_present"] = true;
         }else{
             document.getElementById("response").innerText = "Please Review all the students before submission!";
+            return;
         }
         list.push(d2);
     }
     let obj = JSON.stringify(list);
     console.log(obj);
-    sendRequest(obj);
-    
+    let submit = confirm("Do you want to continue ?");
+    if(submit){
+        sendRequest(obj);
+    }
+     
 }
 
 var btn = document.getElementById("post-attendance-btn");

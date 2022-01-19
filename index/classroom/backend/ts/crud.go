@@ -87,7 +87,7 @@ func GetClassrooms(TeacherId string) []models.Classroom {
 		fmt.Println("failed to establish connection with sql")
 	}
 	defer db.Close()
-	query := fmt.Sprintf(`select classroom_id,department_id,course_id from classrooms
+	query := fmt.Sprintf(`select classroom_id,department_id,course_id,from_date,to_date from classrooms
 	where teacher_id = '%s'`, TeacherId)
 	result, err := db.Query(query)
 	if err != nil {
@@ -96,14 +96,18 @@ func GetClassrooms(TeacherId string) []models.Classroom {
 	var temp models.Classroom
 	var listOfClassrooms []models.Classroom
 	for result.Next() {
-		result.Scan(&temp.ClassroomId, &temp.DepartmentId, &temp.CourseId)
-		listOfClassrooms = append(listOfClassrooms, temp)
-
+		result.Scan(&temp.ClassroomId, &temp.DepartmentId, &temp.CourseId, &temp.From, &temp.To)
+		if temp.To.Sub(time.Now().UTC()) > 0 {
+			listOfClassrooms = append(listOfClassrooms, temp)
+		} else {
+			fmt.Println(temp)
+			fmt.Println("Expired classroom!")
+		}
 	}
 	return listOfClassrooms
 }
 
-func getSessions(ClassroomId int) []models.Session {
+func GetSessionsOfClassroom(ClassroomId int) []models.Session {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
@@ -125,12 +129,12 @@ func getSessions(ClassroomId int) []models.Session {
 	return listOfSessions
 }
 
-func createUnqiueSession(newSession models.Session) (bool, int) {
+func CreateUnqiueSession(newSession models.Session) bool {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
 		fmt.Println("failed to establish connection with sql")
-		return false, 0
+		return false
 	}
 	defer db.Close()
 	justNow := time.Now()
@@ -142,7 +146,7 @@ func createUnqiueSession(newSession models.Session) (bool, int) {
 	if err != nil {
 		fmt.Println("Error creating a session")
 		fmt.Println(err)
-		return false, 0
+		return false
 	}
 	var sid int
 	for result.Next() {
@@ -155,7 +159,7 @@ func createUnqiueSession(newSession models.Session) (bool, int) {
 		if err != nil {
 			fmt.Println("Error creating a session key")
 			fmt.Println(err)
-			return false, 0
+			return false
 		}
 
 		query = fmt.Sprintf(`
@@ -167,46 +171,44 @@ func createUnqiueSession(newSession models.Session) (bool, int) {
 		)`, sid, sid)
 		_, err = db.Query(query)
 		if err != nil {
-			fmt.Println("Error creating a session key")
+			fmt.Println("Error inserting students into attendance!")
 			fmt.Println(err)
-			return false, 0
+			return false
 		}
 
 	} else {
-		return false, 0
+		return false
 	}
-	return true, sid
+	return true
 
 }
 
-// func checkForSession(ClassroomId int) bool {
-// 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
-// 	db, err := sql.Open("postgres", conn)
-// 	if err != nil {
-// 		fmt.Println("failed to establish connection with sql")
-// 		return false
-// 	}
-// 	defer db.Close()
+func IsAnySessionActive(ClassroomId int) bool {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+		return false
+	}
+	defer db.Close()
 
-// 	query := `select max(start_time) <= now()::time and now()::time < max(end_time) from sessions
-// where session_date = (
-// select max(session_date) from sessions) and classroom_id = %d`
+	query := fmt.Sprintf(`select exists(
+		select 1 from sessions 
+		where classroom_id = %d and session_status = 'ACTIVE' or session_status = 'WAITING'
+	)`, ClassroomId)
 
-// 	query = fmt.Sprintf(query, ClassroomId)
-// 	query = strings.TrimSpace(query)
-
-// 	result, err := db.Query(query)
-// 	if err != nil {
-// 		fmt.Println("Error occurred during checking if session already exists")
-// 		fmt.Println(err)
-// 		return false
-// 	}
-// 	var exist bool
-// 	for result.Next() {
-// 		result.Scan(&exist)
-// 	}
-// 	return exist
-// }
+	result, err := db.Query(query)
+	if err != nil {
+		fmt.Println("Error occurred during checking if session already exists")
+		fmt.Println(err)
+		return true
+	}
+	var exist bool
+	for result.Next() {
+		result.Scan(&exist)
+	}
+	return exist
+}
 
 func isAuthenticClassroom(TeacherId string, ClassroomId int) bool {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
@@ -265,7 +267,7 @@ func isAuthenticSession(TeacherId string, ClassroomId int, SessionId int) bool {
 	return valid
 }
 
-func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
+func GetSessionDetails(SessionId int) models.SessionDashBoardDetails {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
@@ -286,31 +288,45 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 	left join teachers as t
 	using(teacher_id)
 	`, SessionId)
+
 	result, err := db.Query(query)
 	if err != nil {
 		fmt.Println("Error retrieving teacher session dash board details")
 	}
-	var data models.TeacherSessionDashBoard
 
+	var Session models.SessionDashBoardDetails
 	for result.Next() {
-		var temp models.Session
-		result.Scan(&data.DepartmentName, &data.CourseName, &data.TeacherName, &temp.Date, &temp.Start_time, &temp.End_time, &data.SessionDetails.Status, &data.SessionDetails.Reviewed)
-		data.SessionDetails.Date = temp.Date.Format("2006-01-02")
-		data.SessionDetails.Start_time = temp.Start_time.Format("15:04:05")
-		data.SessionDetails.End_time = temp.End_time.Format("15:04:05")
+		fmt.Println(result.Scan(&Session.DepartmentName, &Session.CourseName,
+			&Session.TeacherName, &Session.SessionDetails.Date, &Session.SessionDetails.Start_time,
+			&Session.SessionDetails.End_time, &Session.SessionDetails.Status, &Session.SessionDetails.Reviewed))
 	}
 
 	query = fmt.Sprintf(`select session_key from keygen where session_id = %d`, SessionId)
 	result, err = db.Query(query)
 	if err != nil {
 		fmt.Println("Error retrieving teacher session dash board details")
-		return data
+		return Session
 	}
 	for result.Next() {
-		result.Scan(&data.SessionDetails.SessionKey)
+		fmt.Println(result.Scan(&Session.SessionDetails.SessionKey))
 	}
 
-	query = fmt.Sprintf(`select concat(firstname,' ',lastname) as studentname, picture,regnumber, attendance1,attendance1_fp ,attendance2,attendance2_fp, attendance3,attendance3_fp, ispresent from (
+	fmt.Println(Session)
+	return Session
+}
+func GetStudentOfSessionDetails(SessionId int) []models.AttendanceDetails {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+	}
+	defer db.Close()
+
+	var Students []models.AttendanceDetails
+	query := fmt.Sprintf(`select concat(firstname,' ',lastname) as studentname, 
+		picture,regnumber, attendance1,attendance1_fp ,attendance2,attendance2_fp, 
+		attendance3,attendance3_fp, 
+		ispresent from (
 		select * from attendance
 		left join attendance_image_table
 		using(session_id,regnumber,classroom_id)
@@ -318,43 +334,40 @@ func GetSessionDetails(SessionId int) models.TeacherSessionDashBoard {
 		left join students
 		using(regnumber);
 	`, SessionId)
-	result, err = db.Query(query)
+
+	result, err := db.Query(query)
 
 	if err != nil {
 		fmt.Println("Error retrieving student attending session details")
-		return data
+		return Students
 	}
-	var attendeesData models.AttendanceDetails
-	var attendeesList []models.AttendanceDetails
+
 	for result.Next() {
-		var attTime1 time.Time
-		var attTime2 time.Time
-		var attTime3 time.Time
+		var temp models.AttendanceDetails
 		var attfp1 string
 		var attfp2 string
 		var attfp3 string
 		var fairImagePath string
-		result.Scan(&attendeesData.StudentName, &fairImagePath, &attendeesData.Regnumber,
-			&attTime1, &attfp1,
-			&attTime2, &attfp2,
-			&attTime3, &attfp3,
-			&attendeesData.IsPresent)
 
-		attendeesData.Attendance1.PrettyTime = attTime1.Format("15:04:05")
-		attendeesData.Attendance2.PrettyTime = attTime2.Format("15:04:05")
-		attendeesData.Attendance3.PrettyTime = attTime3.Format("15:04:05")
+		err := result.Scan(&temp.StudentName, &fairImagePath, &temp.Regnumber,
+			&temp.Attendance1.Time, &attfp1,
+			&temp.Attendance2.Time, &attfp2,
+			&temp.Attendance3.Time, &attfp3,
+			&temp.IsPresent)
 
-		attendeesData.FairImage = template.URL(convertToBase64String(fairImagePath))
+		fmt.Println(err)
+		fmt.Println("Student is present:", temp.IsPresent)
 
-		attendeesData.Attendance1.ImageFilePath = template.URL(convertToBase64String(attfp1))
-		attendeesData.Attendance2.ImageFilePath = template.URL(convertToBase64String(attfp2))
-		attendeesData.Attendance3.ImageFilePath = template.URL(convertToBase64String(attfp3))
+		temp.FairImage = template.URL(convertToBase64String(fairImagePath))
 
-		attendeesList = append(attendeesList, attendeesData)
+		temp.Attendance1.ImageFilePath = template.URL(convertToBase64String(attfp1))
+		temp.Attendance2.ImageFilePath = template.URL(convertToBase64String(attfp2))
+		temp.Attendance3.ImageFilePath = template.URL(convertToBase64String(attfp3))
+
+		Students = append(Students, temp)
 
 	}
-	data.Attendees = attendeesList
-	return data
+	return Students
 }
 
 func IsSessionReviewed(SessionId int) bool {
@@ -365,7 +378,7 @@ func IsSessionReviewed(SessionId int) bool {
 		return true
 	}
 	defer db.Close()
-	query := fmt.Sprintf("select review from sessions where session_id = %d", SessionId)
+	query := fmt.Sprintf("select reviewed from sessions where session_id = %d", SessionId)
 	result, _ := db.Query(query)
 	var isReviewed bool
 	for result.Next() {
@@ -382,18 +395,99 @@ func ReviewAndSetAttendance(ClassroomId int, SessionId int, Attendance []models.
 		return false
 	}
 	defer db.Close()
-	JsonAttendance, _ := json.Marshal(Attendance)
+	JsonAttendance, err := json.Marshal(Attendance)
+	if err != nil {
+		fmt.Println("Error marshaling attedance")
+		return false
+	}
+
 	query := fmt.Sprintf(`
 		call set_attendance(%d,%d,'%s')
 	`, ClassroomId, SessionId, string(JsonAttendance))
+	fmt.Println(query)
 	_, err = db.Query(query)
 	if err == nil {
-		query = fmt.Sprintf(`update table sessions
+		query = fmt.Sprintf(`update sessions
 				 set reviewed = true
-				 where session_id = %d 
+				 where session_id = %d
 		`, SessionId)
 		_, err = db.Query(query)
+		if err != nil {
+			fmt.Println(err)
+		}
 		return err == nil
+	} else {
+		fmt.Println(err)
 	}
 	return false
+
+}
+
+func InsertStudentIntoClassroom(ClassroomId int, Regnumber string) bool {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+		return false
+	}
+	defer db.Close()
+	query := fmt.Sprintf(`insert into classroom_attendees
+		values(%d,'%s')
+	`, ClassroomId, Regnumber)
+	_, err = db.Query(query)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return err == nil
+}
+func RemoveStudentFromClassroom(ClassroomId int, Regnumber string) bool {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+		return false
+	}
+	defer db.Close()
+	query := fmt.Sprintf(`delete from classroom_attendees
+	where classroom_id = %d and regnumber = '%s'`, ClassroomId, Regnumber)
+	_, err = db.Query(query)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return err == nil
+}
+
+func GetStudentsOfClassroom(ClassroomId int) []models.StudentsDetails {
+
+	var Students []models.StudentsDetails
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+		return Students
+	}
+	defer db.Close()
+	query := fmt.Sprintf(`select concat(firstname,' ',lastname) as Studentname,regnumber,email,picture from (
+		select * from classroom_attendees
+		left join students
+		using(regnumber)
+		where classroom_id = %d
+	) as s;
+	`, ClassroomId)
+
+	result, err := db.Query(query)
+	if err == nil {
+		for result.Next() {
+			var temp models.StudentsDetails
+			var ImagePath string
+			err := result.Scan(&temp.Studentname, &temp.Regnumber, &temp.Email, &ImagePath)
+			fmt.Println(err)
+			fmt.Println(temp)
+			temp.Image = template.URL(convertToBase64String(ImagePath))
+
+			Students = append(Students, temp)
+		}
+	}
+	return Students
+
 }

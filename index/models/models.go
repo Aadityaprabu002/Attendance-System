@@ -62,10 +62,12 @@ type TeacherSignin struct {
 
 // classroom models
 type Classroom struct {
-	TeacherId    string `json:"teacherid"`
-	ClassroomId  string `json:"classroomid"`
-	DepartmentId string `json:"departmentid"`
-	CourseId     string `json:"courseid"`
+	TeacherId    string    `json:"teacherid"`
+	ClassroomId  string    `json:"classroomid"`
+	DepartmentId string    `json:"departmentid"`
+	CourseId     string    `json:"courseid"`
+	From         time.Time `json:"from"`
+	To           time.Time `json:"to"`
 }
 
 //  joinee models
@@ -80,27 +82,29 @@ type Session struct {
 	Start_time  time.Time `json:"start_time"`
 	End_time    time.Time `json:"end_time"`
 	Status      string    `json:"status"`
+	SessionKey  string
+	Reviewed    bool
 }
 
-type PrettySession struct {
-	SessionId  int
-	Date       string
-	Start_time string
-	End_time   string
-	Status     string
-	SessionKey string
-	Reviewed   bool
-}
+// type PrettySession struct {
+// 	SessionId  int
+// 	Date       string
+// 	Start_time string
+// 	End_time   string
+// 	Status     string
+// 	SessionKey string
+// 	Reviewed   bool
+// }
 
-type StudentSessionDashBoard struct {
-	SessionDetails PrettySession
+type SessionDashBoardDetails struct {
+	SessionDetails Session
 	TeacherName    string
 	DepartmentName string
 	CourseName     string
 }
 
 type Attendance struct {
-	PrettyTime    string
+	Time          time.Time
 	ImageFilePath template.URL
 }
 
@@ -114,13 +118,9 @@ type AttendanceDetails struct {
 	IsPresent   bool
 }
 
-type TeacherSessionDashBoard struct {
-	SessionDetails PrettySession
-
-	TeacherName    string
-	DepartmentName string
-	CourseName     string
-	Attendees      []AttendanceDetails
+type TeacherSessionDashBoardDetails struct {
+	SessionDb SessionDashBoardDetails
+	Attendees []AttendanceDetails
 }
 
 type StudentSessionTimerDetails struct {
@@ -140,4 +140,19 @@ type PostAttendance struct {
 type ReviewAttendance struct {
 	Regnumber string `json:"regnumber"`
 	IsPresent bool   `json:"is_present"`
+}
+
+type ClassroomTableData struct {
+	Classrooms []Classroom
+}
+
+type StudentsDetails struct {
+	Studentname string
+	Regnumber   string
+	Image       template.URL
+	Email       string
+}
+type ClassroomTableDetails struct {
+	Sessions []Session
+	Students []StudentsDetails
 }

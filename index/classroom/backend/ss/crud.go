@@ -8,11 +8,34 @@ import (
 	"encoding/base64"
 	"fmt"
 	"image/png"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"strings"
 	"time"
 )
 
+func convertToBase64String(ImagePath string) string {
+	bytes, err := ioutil.ReadFile(ImagePath)
+	if err != nil {
+		fmt.Println("Error ! Image path is bad")
+		return ""
+	}
+	var base64Encoding string
+	mimeType := http.DetectContentType(bytes)
+	switch mimeType {
+	case "image/jpeg":
+		base64Encoding += "data:image/jpeg;base64,"
+	case "image/png":
+		base64Encoding += "data:image/png;base64,"
+	}
+
+	// Append the base64 encoded output
+	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
+
+	// Print the full base64 representation of the image
+	return base64Encoding
+}
 func IsClassRoomExist(ClassroomId string) bool {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	db, err := sql.Open("postgres", conn)
@@ -58,12 +81,38 @@ func isValidSessionKey(SessionKey string) int {
 	return SessionId
 }
 
+func IsStudentBelongsToClassroom(Regnumber string, ClassroomId int) bool {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+		return false
+	}
+	defer db.Close()
+	query := fmt.Sprintf(`select exists (
+		select 1 from classroom_attendees 
+		where classroom_id = %d and regnumber = '%s'
+	)`, ClassroomId, Regnumber)
+
+	result, err := db.Query(query)
+	if err != nil {
+		fmt.Println("Failed checking whether student exists in the classroom")
+		fmt.Println(err)
+		return false
+	}
+	var exists bool
+	for result.Next() {
+		result.Scan(&exists)
+	}
+	return exists
+}
+
 /*
 Grabs the Regsiter number, SessionId and then checks
 whether the student belongs to the classroom associated with the Session given
 Returns true if student belongs otherwise false
 */
-func IsStudentBelongsToClassroom(Regnumber string, SessionId int) bool {
+func IsStudentBelongsToSession(Regnumber string, SessionId int) bool {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
@@ -81,27 +130,14 @@ func IsStudentBelongsToClassroom(Regnumber string, SessionId int) bool {
 	for result.Next() {
 		result.Scan(&ClassroomId)
 	}
-	query = fmt.Sprintf(`select exists (
-		select 1 from classroom_attendees 
-		where classroom_id = %d and regnumber = '%s'
-	)`, ClassroomId, Regnumber)
-	result, err = db.Query(query)
-	if err != nil {
-		fmt.Println("Failed checking whether student exists in the classroom")
-		fmt.Println(err)
-		return false
-	}
-	var exists bool
-	for result.Next() {
-		result.Scan(&exists)
-	}
+	exists := IsStudentBelongsToClassroom(Regnumber, ClassroomId)
 	return exists
 }
 
-func GetSessionDetails(SessionId int) (models.StudentSessionDashBoard, bool) {
+func GetSessionDetails(SessionId int) (models.SessionDashBoardDetails, bool) {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
 	db, err := sql.Open("postgres", conn)
-	var data models.StudentSessionDashBoard
+	var data models.SessionDashBoardDetails
 	if err != nil {
 		fmt.Println(("failed to establish connection with sql"))
 		return data, false
@@ -129,11 +165,9 @@ func GetSessionDetails(SessionId int) (models.StudentSessionDashBoard, bool) {
 	}
 
 	for result.Next() {
-		var temp models.Session
-		result.Scan(&data.TeacherName, &temp.Date, &temp.Start_time, &temp.End_time, &data.SessionDetails.Status, &data.DepartmentName, &data.CourseName)
-		data.SessionDetails.Date = temp.Date.Format("2006-01-02")
-		data.SessionDetails.Start_time = temp.Start_time.Format("15:04:05")
-		data.SessionDetails.End_time = temp.End_time.Format("15:04:05")
+		result.Scan(&data.TeacherName, &data.SessionDetails.Date,
+			&data.SessionDetails.Start_time, &data.SessionDetails.End_time,
+			&data.SessionDetails.Status, &data.DepartmentName, &data.CourseName)
 	}
 	return data, true
 }
