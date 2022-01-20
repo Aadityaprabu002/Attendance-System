@@ -19,7 +19,10 @@ function submitForm(){
 
     let teacherid = document.querySelector("#teacherid").value
     let password = document.querySelector("#password").value; 
-
+    if(teacherid.length != 10){
+        document.getElementById("response").innerText = "Enter a valid teacher id";
+        return;
+    }
     let obj = JSON.stringify({
        "teacherid": teacherid,
        "password": password

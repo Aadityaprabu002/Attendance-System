@@ -438,7 +438,19 @@ func InsertStudentIntoClassroom(ClassroomId int, Regnumber string) bool {
 	if err != nil {
 		fmt.Println(err)
 	}
-	return err == nil
+	if IsAnySessionActive(ClassroomId) {
+		query = fmt.Sprintf(`
+			call insert_into_active_session(%d,'%s')
+		`, ClassroomId, Regnumber)
+		_, err = db.Query(query)
+		fmt.Println(query)
+		if err != nil {
+			fmt.Println(err)
+			RemoveStudentFromClassroom(ClassroomId, Regnumber)
+		}
+		return err == nil
+	}
+	return true
 }
 func RemoveStudentFromClassroom(ClassroomId int, Regnumber string) bool {
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)

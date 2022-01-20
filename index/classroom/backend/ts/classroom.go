@@ -269,7 +269,7 @@ func Handlestudents(w http.ResponseWriter, r *http.Request) {
 	if teacher.IsLogged(r) {
 		if r.Method == "POST" {
 			res := models.Htmlresponse{
-				Response: "Failed!",
+				Response: "Failed to add student!",
 				Status:   0,
 			}
 			params := mux.Vars(r)
@@ -293,9 +293,13 @@ func Handlestudents(w http.ResponseWriter, r *http.Request) {
 						switch Student.Code {
 						case 1:
 							if !student_classroom.IsStudentBelongsToClassroom(Student.Regnumber, ClassroomId) {
-								if InsertStudentIntoClassroom(ClassroomId, Student.Regnumber) {
-									res.Response = "Successflly added student! " + Student.Regnumber
-									res.Status = 1
+								if adminss.GetStudentAccountStatus(Student.Regnumber) == 2 {
+									if InsertStudentIntoClassroom(ClassroomId, Student.Regnumber) {
+										res.Response = "Successflly added student! " + Student.Regnumber
+										res.Status = 1
+									}
+								} else {
+									res.Response = "Student not completed registering"
 								}
 							} else {
 								res.Response = "Student already present in the classroom"

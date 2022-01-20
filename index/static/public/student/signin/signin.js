@@ -19,10 +19,15 @@ function submitForm(){
 
     let regnumber = document.querySelector("#rollno").value
     let password = document.querySelector("#password").value; 
+    if(regnumber.length != 10){
+        document.getElementById("response").innerText = "Enter a valid regnumber";
+        return;
+    }
     let obj = JSON.stringify({
        "regnumber":regnumber,
        "password": password
     });
+    
     console.log(obj);
     sendRequest(obj);
 }

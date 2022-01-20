@@ -229,3 +229,8 @@ func EncryptPassword(password string) string {
 	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 8)
 	return string(encryptedPassword)
 }
+
+// func ValidateStudent(newStudent models.StudentSignup) string {
+// 	re := regexp.MustCompile()
+// 	re.Match()
+// }
