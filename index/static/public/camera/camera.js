@@ -65,7 +65,8 @@ function loadCamera(e){
         button.setAttribute("id","capture");
         button.setAttribute("value","0");
         button.setAttribute("type","button");
-        button.innerHTML = "CAPTURE";
+        button.setAttribute("class","btn btn-danger");
+        button.innerHTML = "Capture";
 
     let div = document.createElement("div");
         div.setAttribute("id","face-detection");

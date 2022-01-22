@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
@@ -18,48 +17,51 @@
 <body>
     <nav class="navbar head-bg d-flex justify-content-center" style = "min-height: 10vh;">
         <div class="navbar-brand head-content" >
-            Welcome {{.Firstname}} {{.Lastname}}
+            Session Details
         </div>
     </nav>
-    <div class="container mt-5">
-        <div class="text-center">
-            <h6>Please fill up your email and take a good picture of yourself </h6>
-            <h6>Then proceed to your dashboard</h6>
-        </div>
-        <div class="d-flex justify-content-center">
-            <table class="table table-borderless table-striped table-dark" >
+    <div class="container mt-5" style="background-color: white;">
+        <h2 class=>Active Session   </h2>
+        <table class="table table-borderless table-dark">
+            <thead>
+                <tr>
+                    <th>TEACHER NAME</th>
+                    <th>DEPARTMENT NAME</th>
+                    <th>COURSE NAME</th>
+                    <th>SESSION DATE</th>
+                    <th>START TIME</th>
+                    <th>END TIME</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ .TeacherName }}</td>
+                    <td>{{ .DepartmentName }}</td>
+                    <td>{{ .CourseName }}</td>
+                    <td>{{ .SessionDetails.Date.Format "2006-01-02" }}</td>
+                    <td>{{ .SessionDetails.Start_time.Format "15:04:05" }}</td>
+                    <td>{{ .SessionDetails.End_time.Format "15:04:05" }}</td>
+                    <td id="status">{{ .SessionDetails.Status }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div id="timer" class="display-1 text-center"></div>
+        <div id="response" class="display-2 text-center"></div>
+        <button type="button" id="exit-session-btn" class="btn btn-danger">
+            EXIT SESSION
+        </button>
+        <div id="camera-container">
 
-                <tr>
-                    <th>Email</th>
-                    <td><input name="email" id="email" type="email" required></td>
-                </tr>
-                <tr>
-                    <th>Password</th>
-                    <td><input name="password" id="password" type="password" required></td>
-                </tr>
-                <tr>
-                    <th>Confirm Password</th>
-                    <td><input name="password" id="password" type="password" required></td>
-                </tr>
-                <tr>
-                    <td colspan="2" id="response" class="text-center text-danger"></td>
-                </tr>
-
-            </table>
-        </div>
-        <div class="d-flex justify-content-center">
-            <div id="camera"></div>
-        </div>
-        <div class="d-flex justify-content-center" >
-            <button type="button" id="submit-btn" class="btn btn-success">Submit</button>
         </div>
     </div>
+
     <script src="/static/camera/facedetection/face-api.min.js"></script>
     <script src="/static/camera/camera.js"></script>
-    <script src="/static/student/complete-registration.js"></script>
+    <script src="/static/classroom/ss/sessiondashboard.js"></script>
 
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
         crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
         integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"

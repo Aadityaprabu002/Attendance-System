@@ -5,38 +5,52 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <title>Sign up</title>
     <style>
-        body{background: white; font-family: Arial;}
-        .head-bg{background : rgba(44,49,53,255);color :white}
-        .head-content{font-size: 2em; font-family:arial; font-weight: bolder;}
+        body {
+            background: white;
+            font-family: Arial;
+        }
+
+        .head-bg {
+            background: rgba(44, 49, 53, 255);
+            color: white
+        }
+
+        .head-content {
+            font-size: 2em;
+            font-family: arial;
+            font-weight: bolder;
+        }
     </style>
 </head>
 
 <body>
-    <nav class="navbar head-bg d-flex justify-content-center" style = "min-height: 10vh;">
-        <div class="navbar-brand head-content" >
-            Admin
+    <nav class="navbar head-bg d-flex justify-content-center" style="min-height: 10vh;">
+        <div class="navbar-brand head-content">
+            Sign-Up
         </div>
     </nav>
     <div class="container mt-5">
-        <h2 class="text-center">Student sign-up form</h2>
-    <div class="d-flex justify-content-center">
-        
+        <h2 class="text-center">Teacher sign-up form</h2>
         <table class="table table-borderless table-dark table-striped">
             <tr>
                 <th>First Name:</th>
-                <td><input name="fname" id="fname" type="text"></td>
+                <td><input id="fname" type="text"></td>
             </tr>
             <tr>
                 <th>Last Name:</th>
-                <td><input name="lname" id="lname" type="text"></td>
+                <td><input id="lname" type="text"></td>
             </tr>
             <tr>
-                <th>Reg number:</th>
-                <td><input name="rollno" id="rollno" type="text" placeholder="yyyyxxxxxx"></td>
+                <th>Teacher Id:</th>
+                <td><input id="teacherid" type="text"></td>
+            </tr>
+            <tr>
+                <th>Email:</th>
+                <td><input id="email" type="email"></td>
             </tr>
             <tr>
                 <th>Password:</th>
@@ -47,21 +61,16 @@
                 <td><input name="password" id="password" type="password"></td>
             </tr>
             <tr>
-                <th style="text-align: center;" colspan="2"><button class="btn btn-success" onclick="submitForm()" type="button">SUBMIT</button>
-                </th>
+                <th class="text-center" colspan="2"><button onclick="submitForm()" type="button"
+                        class="btn btn-success">SUBMIT</button></th>
             </tr>
             <tr>
-                <th  id="response"  class="text-danger text-center"  colspan="2"></th>
+                <th class="text-center text-danger" id="response" style="text-align: center;" colspan="2"></th>
             </tr>
-
         </table>
     </div>
-    </div>
-
-    <script src="/static/student/signup/signup.js"></script>
-   
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
         crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
         integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
@@ -69,6 +78,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
+    <script src="/static/admin/teacher/signup/signup.js"></script>
 </body>
 
 </html>

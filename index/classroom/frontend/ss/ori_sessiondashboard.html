@@ -7,21 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <style>
-        body{background: white; font-family: Arial;}
-        .head-bg{background : rgba(44,49,53,255);color :white}
-        .head-content{font-size: 2em; font-family:arial; font-weight: bolder;}
-    </style>
 </head>
 
 <body>
-    <nav class="navbar head-bg d-flex justify-content-center" style = "min-height: 10vh;">
-        <div class="navbar-brand head-content" >
-            Session Details
-        </div>
-    </nav>
-    <div class="container mt-5" style="background-color: white;">
-        <h2 class=>Session</h2>
+    <div class="container" style="background-color: azure;">
+        <h2 class="text-center">Session Details</h2>
         <table class="table table-borderless table-dark">
             <thead>
                 <tr>
@@ -48,17 +38,17 @@
         </table>
         <div id="timer" class="display-1 text-center"></div>
         <div id="response" class="display-2 text-center"></div>
+        <div id="camera-container">
+
+        </div>
         <button type="button" id="exit-session-btn" class="btn btn-danger">
             EXIT SESSION
         </button>
-        <div id="camera-container" class="d-flex justify-content-center mt-5">
-
-        </div>
     </div>
 
     <script src="/static/camera/facedetection/face-api.min.js"></script>
-    <script src="/static/camera/camera.js"></script>
     <script src="/static/notifier/notification.js"></script>
+    <script src="/static/camera/camera.js"></script>
     <script src="/static/classroom/ss/sessiondashboard.js"></script>
 
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"

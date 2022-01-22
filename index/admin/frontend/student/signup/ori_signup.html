@@ -8,24 +8,14 @@
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <style>
-        body{background: white; font-family: Arial;}
-        .head-bg{background : rgba(44,49,53,255);color :white}
-        .head-content{font-size: 2em; font-family:arial; font-weight: bolder;}
-    </style>
 </head>
 
-<body>
-    <nav class="navbar head-bg d-flex justify-content-center" style = "min-height: 10vh;">
-        <div class="navbar-brand head-content" >
-            Admin
-        </div>
-    </nav>
-    <div class="container mt-5">
-        <h2 class="text-center">Student sign-up form</h2>
+<body style="background-color: azure;">
     <div class="d-flex justify-content-center">
-        
-        <table class="table table-borderless table-dark table-striped">
+        <table style="text-align: left;width: 20%;background-color: white;" class="table table-bordered">
+            <tr>
+                <th style="text-align: center;" colspan="2"><h2>Sign Up</h2></th>
+            </tr>
             <tr>
                 <th>First Name:</th>
                 <td><input name="fname" id="fname" type="text"></td>
@@ -51,11 +41,10 @@
                 </th>
             </tr>
             <tr>
-                <th  id="response"  class="text-danger text-center"  colspan="2"></th>
+                <th  id="response"  class="text-danger" style="text-align: center;" colspan="2"></th>
             </tr>
 
         </table>
-    </div>
     </div>
 
     <script src="/static/student/signup/signup.js"></script>

@@ -82,6 +82,7 @@ function loadPostAttendance(camera,attNumber){
     attBtn.innerHTML = "Post Attendance"
     attBtn.type = "button";
     attBtn.id = "attendance-button"
+    attBtn.setAttribute("class","btn btn-danger");
     attBtn.addEventListener("click",function(){
         let image64 = document.getElementById("canvas").toDataURL('image/png');
         let time = new Date();  

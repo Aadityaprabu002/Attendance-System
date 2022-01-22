@@ -54,24 +54,15 @@
     <div class="container">
         <table class="table table-borderless table-striped table-dark" >
             <tr>
-                <td>Department</td>
+                <td>Department Id</td>
                 <td>
-                    <select  id="department-id">
-                        {{ range .Department }}
-                            <option value="{{ .DepartmentId }}">{{ .DepartmentName}}</option>
-                        {{ end }}
-                    </select>
+                    <input type="text" id="department-id">
                 </td>
             </tr>
             <tr>
-                <td>Course</td>
+                <td>Course Id</td>
                 <td>
-                  
-                    <select  id="course-id">
-                        {{ range .Courses }}
-                            <option value="{{ .CourseId }}">{{ .CourseName}}</option>
-                        {{ end }}
-                    </select>
+                    <input type="text" id="course-id">
                 </td>
             </tr>
             <tr>
@@ -100,9 +91,7 @@
             </tr>
         </table>
     </div>
-    <div class="container">
-        <button class="btn btn-danger" onclick="window.location.href='/teacher/signout'" type="button">Sign-out</button>
-    </div>
+   
     <script src="/static/classroom/ts/dashboard.js"></script>
 
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
