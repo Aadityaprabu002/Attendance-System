@@ -142,8 +142,18 @@ type ReviewAttendance struct {
 	IsPresent bool   `json:"is_present"`
 }
 
+type Course struct {
+	CourseId   string
+	CourseName string
+}
+type Department struct {
+	DepartmentId   string
+	DepartmentName string
+}
 type ClassroomTableData struct {
 	Classrooms []Classroom
+	Courses    []Course
+	Department []Department
 }
 
 type StudentsDetails struct {

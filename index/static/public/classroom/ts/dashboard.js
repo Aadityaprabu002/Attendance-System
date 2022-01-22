@@ -1,3 +1,8 @@
+Date.prototype.isValid = function () {
+    // An invalid date object returns NaN for getTime() and NaN is the only
+    // object not strictly equal to itself.
+    return this.getTime() === this.getTime();
+}; 
 const MONTH = 1000*60*60*24*31;
 function sendRequest(obj){
     
@@ -18,6 +23,7 @@ function sendRequest(obj){
     xhr.send(obj);
 }
 
+
 function submitForm(){
 
     let deptid = document.querySelector("#department-id").value
@@ -25,6 +31,7 @@ function submitForm(){
     let from = new Date(document.querySelector("#from-date").value);
     let to = new Date(document.querySelector("#to-date").value);
     let today = new Date();
+
     if (from.getTime() > to.getTime()){
         document.getElementById("classroom-response").innerText = "From date cant be lesser than to date";
         return;
@@ -35,13 +42,20 @@ function submitForm(){
         document.getElementById("classroom-response").innerText = "Clasroom life should be atleast 5 month";
         return;
     }
-    let obj = JSON.stringify({
+    let obj ={
        "departmentid": deptid,
        "courseid": courseid,
        "from":new Date(from),
        "to" : new Date(to)
-    });
+    };
     console.log(obj);
+
+    if(isNaN(obj["to"].getTime()) || isNaN(obj["from"].getTime())){
+        document.getElementById("classroom-response").innerText = "Please completely enter values";
+        return;
+    }
+
+    obj =  JSON.stringify(obj);
     sendRequest(obj);
 }
 var btn = document.getElementById("submitBtn");

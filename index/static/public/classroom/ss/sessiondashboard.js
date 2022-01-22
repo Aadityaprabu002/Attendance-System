@@ -4,6 +4,7 @@ var camera;
 var isAttBtnLoaded = false;
 var isAttPosted = false;
 
+
 const MINUTE_IN_MS = 60000;
 
 function humanReadableTimeFormat(diff){
@@ -76,6 +77,7 @@ function postAttendance(obj){
 }
 
 function loadPostAttendance(camera,attNumber){
+    isAttBtnLoaded = true;
     attBtn = document.createElement("button")
     attBtn.innerHTML = "Post Attendance"
     attBtn.type = "button";
@@ -94,10 +96,13 @@ function loadPostAttendance(camera,attNumber){
     div.id = "attendance-response";
     camera.appendChild(attBtn);
     camera.appendChild(div);
-    isAttBtnLoaded = true;
+    
 }
 
 function unloadPostAttendance(){
+    
+    isAttBtnLoaded = false;
+    isFaceVisible = false;
     let attBtn = document.getElementById("attendance-button");
     if (attBtn != null && typeof(attBtn) != undefined){
         let parent = attBtn.parentNode;
@@ -110,7 +115,6 @@ function unloadPostAttendance(){
         parent.removeChild(attRes);
     }
    
-    isAttBtnLoaded = false;
 }
 
 function executeTimer(cur,res){
@@ -118,17 +122,18 @@ function executeTimer(cur,res){
     if(res.StartTime.getTime() <= cur.getTime() && cur.getTime() < res.EndTime.getTime()){ 
         let diff = res.EndTime.getTime() - cur.getTime();
         document.getElementById("timer").innerHTML = humanReadableTimeFormat(diff);
-        let body = document.getElementsByTagName("body")[0];
+        let body = document.getElementById("camera-container");
         if(cur.getTime() < res.Popup1.getTime()){
             return;
         }
         else if(res.Popup1.getTime() <= cur.getTime() && cur.getTime() < res.Popup1.getTime() + 3 * MINUTE_IN_MS){
             if(modelsLoaded & !cameraLoaded){
+                notifyMe();
                 camera = loadCamera(body);
                 startVideo();
             }
             if(isFaceVisible && isPhotoTaken && !isAttPosted && !isAttBtnLoaded){ 
-                    loadPostAttendance(camera,1);  
+                loadPostAttendance(camera,1);  
             }
             
         }else if(res.Popup1.getTime() + 3* MINUTE_IN_MS < cur.getTime() && cur.getTime() < res.Popup2.getTime()){
@@ -142,6 +147,7 @@ function executeTimer(cur,res){
 
         }else if(res.Popup2.getTime() <= cur.getTime() && cur.getTime() < res.Popup2.getTime() + 3 * MINUTE_IN_MS){
             if(modelsLoaded & !cameraLoaded){
+                notifyMe();
                 camera = loadCamera(body);
                 startVideo();
             }
@@ -158,11 +164,12 @@ function executeTimer(cur,res){
             }  
         }else if(res.Popup3.getTime() <= cur.getTime() && cur.getTime() < res.Popup3.getTime() + 3 * MINUTE_IN_MS){
             if(modelsLoaded & !cameraLoaded){
+                notifyMe();
                 camera = loadCamera(body);
                 startVideo();
             }
             if(isFaceVisible && isPhotoTaken && !isAttPosted && !isAttBtnLoaded){ 
-                    loadPostAttendance(camera,3);  
+                loadPostAttendance(camera,3);  
             }
             
         }else if(res.Popup3.getTime() + 3* MINUTE_IN_MS < cur.getTime()){

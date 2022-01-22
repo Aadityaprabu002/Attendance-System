@@ -8,23 +8,13 @@
     <title>Document</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-        <style>
-            body{background: white; font-family: Arial;}
-            .head-bg{background : rgba(44,49,53,255);color :white}
-            .head-content{font-size: 2em; font-family:arial; font-weight: bolder;}
-        </style>
 </head>
 
 <body>
-    <nav class="navbar head-bg d-flex justify-content-center" style = "min-height: 10vh;">
-        <div class="navbar-brand head-content" >
-            Dashboard
-        </div>
-    </nav>
-    <div class="container mt-5">
-        <h2>Your Classrooms</h2>
-            <table class="table table-borderless table-striped table-dark " id="classroom-table">
-            
+    <div class="container">
+        <h2 class="text-center">Your classrooms</h2>
+        <table class="table table-borderless table-striped table-dark " id="classroom-table">
+            <caption>YOUR CLASSROOMS</caption>
             <thead>
                 <tr>
                     <th>CLASSROOM ID</th>
@@ -52,26 +42,17 @@
         </table>
     </div>
     <div class="container">
-        <table class="table table-borderless table-striped table-dark" >
+        <table class="table table-bordered" >
             <tr>
-                <td>Department</td>
+                <td>Department Id</td>
                 <td>
-                    <select  id="department-id">
-                        {{ range .Department }}
-                            <option value="{{ .DepartmentId }}">{{ .DepartmentName}}</option>
-                        {{ end }}
-                    </select>
+                    <input type="text" id="department-id">
                 </td>
             </tr>
             <tr>
-                <td>Course</td>
+                <td>Course Id</td>
                 <td>
-                  
-                    <select  id="course-id">
-                        {{ range .Courses }}
-                            <option value="{{ .CourseId }}">{{ .CourseName}}</option>
-                        {{ end }}
-                    </select>
+                    <input type="text" id="course-id">
                 </td>
             </tr>
             <tr>

@@ -56,6 +56,8 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 			tmp, _ := template.ParseFiles("classroom/frontend/ts/dashboard.html")
 			data := models.ClassroomTableData{
 				Classrooms: GetClassrooms(session.Values["TEACHER_ID"].(string)),
+				Courses:    GetCourses(),
+				Department: GetDepartments(),
 			}
 			fmt.Println("list of classrooms:")
 			fmt.Print(data)

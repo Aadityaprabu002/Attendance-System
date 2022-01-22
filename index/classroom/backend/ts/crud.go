@@ -503,3 +503,49 @@ func GetStudentsOfClassroom(ClassroomId int) []models.StudentsDetails {
 	return Students
 
 }
+
+func GetCourses() []models.Course {
+	var Courses []models.Course
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+		return Courses
+	}
+	defer db.Close()
+	query := `select course_id,course_name from courses`
+	result, err := db.Query(query)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Error getting courses")
+	}
+	for result.Next() {
+		var temp models.Course
+		result.Scan(&temp.CourseId, &temp.CourseName)
+		Courses = append(Courses, temp)
+	}
+	return Courses
+}
+
+func GetDepartments() []models.Department {
+	var Departments []models.Department
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+		return Departments
+	}
+	defer db.Close()
+	query := `select department_id,department_name from departments`
+	result, err := db.Query(query)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Error getting courses")
+	}
+	for result.Next() {
+		var temp models.Department
+		result.Scan(&temp.DepartmentId, &temp.DepartmentName)
+		Departments = append(Departments, temp)
+	}
+	return Departments
+}

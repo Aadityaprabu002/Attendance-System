@@ -21,7 +21,7 @@ function submitForm(){
     let password = document.querySelector("#password").value; 
     if(teacherid.length != 10){
         document.getElementById("response").innerText = "Enter a valid teacher id";
-        return;
+        return; 
     }
     let obj = JSON.stringify({
        "teacherid": teacherid,

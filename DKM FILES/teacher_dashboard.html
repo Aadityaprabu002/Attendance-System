@@ -8,39 +8,19 @@
     <title>Document</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
-    <style>
-        body {
-            background: white;
-            font-family: Arial;
-        }
-
-        .head-bg {
-            background: rgba(44, 49, 53, 255);
-            color: white
-        }
-
-        .head-content {
-            font-size: 2em;
-            font-family: arial;
-            font-weight: bolder;
-        }
-    </style>
 </head>
 
 <body>
-    <nav class="navbar head-bg d-flex justify-content-center" style="min-height: 10vh;">
-        <div class="navbar-brand head-content">
-            Classroom
+    <nav class="navbar head-bg d-flex justify-content-center" style = "min-height: 10vh;">
+        <div class="navbar-brand head-content" >
+            Your Sessions
         </div>
     </nav>
-    <div class="container mt-5 ">
-        <h2>Sessions</h2>
+    <div class="container flex-row mt-5 ">
         <div>
             <table id="session-table" class="table table-borderless table-dark table-striped mt-4">
                 <thead>
                     <tr>
-                        <th>SESSION ID</th>
                         <th>SESSION DATE</th>
                         <th>START TIME</th>
                         <th>END TIME</th>
@@ -51,7 +31,6 @@
                 <tbody>
                     {{range .Sessions}}
                     <tr>
-                        <td>{{.SessionId}}</td>
                         <td>{{.Date.Format "2006-01-02"}}</td>
                         <td>{{.Start_time.Format "15:04:05"}}</td>
                         <td>{{.End_time.Format "15:04:05"}}</td>
@@ -114,12 +93,12 @@
         <table class="table table-borderless table-dark table-striped  mt-4" style="width: 100%;">
             <tr>
                 <td><input type="text" id="add-student" placeholder="yyyyxxzzzz"></td>
-                <th> <button type="button" id="add-student-btn" class="btn btn-success">Add student</button></th>
+                <th> <button type="button" id="add-student-btn" class="btn btn-success" style = "width:35%">Add student</button></th>
                 <td id="add-student-response"></td>
             </tr>
             <tr>
                 <td><input type="text" id="remove-student" placeholder="yyyyxxzzzz"></td>
-                <th><button type="button" id="remove-student-btn" class="btn btn-danger"> Remove Student </button></th>
+                <th><button type="button" id="remove-student-btn" class="btn btn-danger" style = "width:35%"> Remove Student </button></th>
                 <td id="remove-student-response"></td>
             </tr>
         </table>
@@ -127,6 +106,16 @@
 
 
     </div>
+    <style>
+        body{background: white; font-family: Arial;}
+        .head-bg{background : rgba(44,49,53,255);color :white}
+        .head-content{font-size: 2em; font-family:arial; font-weight: bolder;}
+    </style>
+
+   
+
+
+
     <script src="/static/classroom/ts/classroomdashboard.js"></script>
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
         integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
