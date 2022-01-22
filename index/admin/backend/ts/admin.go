@@ -32,13 +32,11 @@ func TeacherSignup(w http.ResponseWriter, r *http.Request) {
 			if params.Password[0] == params.Password[1] {
 				encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(params.Password[0]), 8)
 				newTeacher := models.Teacher{
-					Email:        params.Email,
-					Firstname:    params.Firstname,
-					Lastname:     params.Lastname,
-					TeacherId:    params.TeacherId,
-					DepartmentId: params.DepartmentId,
-					CourseId:     params.CourseId,
-					Password:     string(encryptedPassword),
+					Email:     params.Email,
+					Firstname: params.Firstname,
+					Lastname:  params.Lastname,
+					TeacherId: params.TeacherId,
+					Password:  string(encryptedPassword),
 				}
 				if !IsTeacherExist(newTeacher) {
 					insertTeacher(newTeacher)

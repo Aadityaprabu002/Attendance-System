@@ -21,9 +21,9 @@ func insertTeacher(newTeacher models.Teacher) {
 	defer db.Close()
 
 	query := fmt.Sprintf(`
-				Insert into teachers (email,firstname,lastname,password,teacher_id,department_id,course_id)
-				values('%s','%s','%s','%s','%s','%s','%s') 
-				`, newTeacher.Email, newTeacher.Firstname, newTeacher.Lastname, newTeacher.Password, newTeacher.TeacherId, newTeacher.DepartmentId, newTeacher.CourseId)
+				Insert into teachers (email,firstname,lastname,password,teacher_id)
+				values('%s','%s','%s','%s','%s') 
+				`, newTeacher.Email, newTeacher.Firstname, newTeacher.Lastname, newTeacher.Password, newTeacher.TeacherId)
 
 	query = strings.TrimSpace(query)
 	fmt.Print(query)

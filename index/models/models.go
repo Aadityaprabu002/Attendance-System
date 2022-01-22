@@ -37,13 +37,11 @@ type StudentSignin struct {
 
 // teacher models
 type Teacher struct {
-	Firstname    string `json:"firstname"`
-	Lastname     string `json:"lastname"`
-	Email        string `json:"email"`
-	TeacherId    string `json:"teacherid"`
-	DepartmentId string `json:"departmentid"`
-	CourseId     string `json:"courseid"`
-	Password     string `json:"-"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	Email     string `json:"email"`
+	TeacherId string `json:"teacherid"`
+	Password  string `json:"-"`
 }
 
 type TeacherSignup struct {
