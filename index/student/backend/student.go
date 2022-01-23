@@ -119,9 +119,10 @@ func CompleteRegistration(w http.ResponseWriter, r *http.Request) {
 				json.NewEncoder(w).Encode(res)
 			}
 		} else if AccountStatus == 2 {
-			http.Redirect(w, r, "/student/dashboard", http.StatusAccepted)
+
+			http.Redirect(w, r, "/student/dashboard", http.StatusSeeOther)
 		} else {
-			http.Redirect(w, r, "/student/signin", http.StatusSeeOther)
+			http.Redirect(w, r, "/student/signout", http.StatusSeeOther)
 		}
 	}
 

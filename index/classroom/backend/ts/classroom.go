@@ -2,6 +2,7 @@ package classroom
 
 import (
 	adminss "attsys/admin/backend/ss"
+	admin "attsys/admin/backend/ts"
 	student_classroom "attsys/classroom/backend/ss"
 	connections "attsys/connections"
 	key "attsys/env"
@@ -51,31 +52,42 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 	if teacher.IsLogged(r) {
 		session, _ := store.Get(r, "teacher")
-		if r.Method == "GET" {
-			fmt.Println("GET")
-			tmp, _ := template.ParseFiles("classroom/frontend/ts/dashboard.html")
-			data := models.ClassroomTableData{
-				Classrooms: GetClassrooms(session.Values["TEACHER_ID"].(string)),
-				Courses:    GetCourses(),
-				Department: GetDepartments(),
-			}
-			fmt.Println("list of classrooms:")
-			fmt.Print(data)
-			tmp.Execute(w, data)
+		TeacherId := session.Values["TEACHER_ID"].(string)
+		status := admin.GetTeacherAccountStatus(TeacherId)
+		fmt.Println(status)
+		switch status {
+		case 0:
+			http.Redirect(w, r, "/teacher/signout", http.StatusSeeOther)
+		case 1:
+			fmt.Println("Teacher should completely register first!")
+			http.Redirect(w, r, "/teacher/signin/complete_registration", http.StatusSeeOther)
+		case 2:
+			if r.Method == "GET" {
+				fmt.Println("GET")
+				tmp, _ := template.ParseFiles("classroom/frontend/ts/dashboard.html")
+				data := models.ClassroomTableData{
+					Classrooms: GetClassrooms(TeacherId),
+					Courses:    GetCourses(),
+					Department: GetDepartments(),
+				}
+				fmt.Println("list of classrooms:")
+				fmt.Print(data)
+				tmp.Execute(w, data)
 
-		} else if r.Method == "POST" {
-			fmt.Println("POST")
-			var params models.Classroom
-			err := json.NewDecoder(r.Body).Decode(&params)
-			if err != nil {
-				fmt.Println(err)
+			} else if r.Method == "POST" {
+				fmt.Println("POST")
+				var params models.Classroom
+				err := json.NewDecoder(r.Body).Decode(&params)
+				if err != nil {
+					fmt.Println(err)
+				}
+				if CreateOrAppendClassRoom(session.Values["TEACHER_ID"].(string), params) {
+					msg.Status = 1
+				} else {
+					msg.Response = "Failed creating a classroom"
+				}
+				json.NewEncoder(w).Encode(msg)
 			}
-			if CreateOrAppendClassRoom(session.Values["TEACHER_ID"].(string), params) {
-				msg.Status = 1
-			} else {
-				msg.Response = "Failed creating a classroom"
-			}
-			json.NewEncoder(w).Encode(msg)
 		}
 	} else {
 		http.Redirect(w, r, "/teacher/signin", http.StatusSeeOther)

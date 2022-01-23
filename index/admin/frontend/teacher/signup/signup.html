@@ -34,6 +34,33 @@
         </div>
     </nav>
     <div class="container mt-5">
+        <h2 class="text-center">Teacher list</h2>
+        <table class="table table-borderless table-dark table-striped" id="teacher-table">
+            <thead>
+                <tr>
+                    <th>
+                        Teacher Id
+                    </th>
+                    <th>
+                        Teacher Name
+                    </th>
+                    <th>
+                        Email
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .Teachers }}
+                <tr>
+                    <td>{{ .Teachername }}</td>
+                    <td>{{ .TeacherId }}</td>
+                    <td>{{ .Email }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+    <div class="container mt-5">
         <h2 class="text-center">Teacher sign-up form</h2>
         <table class="table table-borderless table-dark table-striped">
             <tr>
@@ -48,10 +75,7 @@
                 <th>Teacher Id:</th>
                 <td><input id="teacherid" type="text" placeholder="yyyyxxxxxx"></td>
             </tr>
-            <tr>
-                <th>Email:</th>
-                <td><input id="email" type="email"></td>
-            </tr>
+
             <tr>
                 <th>Password:</th>
                 <td><input name="password" id="password" type="password"></td>
@@ -69,6 +93,21 @@
             </tr>
         </table>
     </div>
+    <div class="container mt-5">
+        <h2 class="text-center">Teacher remove form</h2>
+        <div class="d-flex justify-content-center">
+            <table class="table table-borderless table-dark table-striped">
+                <tr>
+                    <th>Teacher id:</th>
+                    <td><input s id="teacherid-remove" type="text" placeholder="yyyyxxxxxx"></td>
+                    <td><button class="btn btn-danger" onclick="removeTeacher()" type="button">Remove</button></td>
+                </tr>
+                <tr>
+                    <th id="remove-teacher-response" class="text-danger text-center" colspan="2"></th>
+                </tr>
+            </table>
+        </div>
+    </div>
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
         integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
         crossorigin="anonymous"></script>
@@ -78,7 +117,40 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
+
+
+
+    <script type="text/javascript" charset="utf8"
+        src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#teacher-table').DataTable();
+        });
+        $(document).ready(function ($) {
+            $(".clickable-row").click(function () {
+                window.open($(this).data("href"), '_blank');
+            });
+        });
+
+        $(document).ready(function () {
+            $('#student-table').DataTable();
+        });
+        $(document).ready(function ($) {
+            $(".clickable-row").click(function () {
+                window.open($(this).data("href"), '_blank');
+            });
+        });
+
+
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
     <script src="/static/teacher/signup/signup.js"></script>
+
 </body>
 
 </html>

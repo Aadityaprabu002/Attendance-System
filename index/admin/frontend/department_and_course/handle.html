@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handle Department and Courses</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+        body {
+            background: white;
+            font-family: Arial;
+        }
+
+        .head-bg {
+            background: rgba(44, 49, 53, 255);
+            color: white
+        }
+
+        .head-content {
+            font-size: 2em;
+            font-family: arial;
+            font-weight: bolder;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar head-bg d-flex justify-content-center" style="min-height: 10vh;">
+        <div class="navbar-brand head-content">
+            Admin
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h2>Department table</h2>
+        <table class="table table-borderless table-dark table-striped" id="department-table">
+            <thead>
+                <tr>
+                    <th>Department Id</th>
+                    <th>Department Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .Department }}
+                <tr>
+                    <td>{{ .DepartmentId }}</td>
+                    <td>{{ .DepartmentName}}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+    <div class="container mt-5">
+
+        <table class="table table-borderless table-dark table-striped">
+            <tr>
+                <th>Department Id</th>
+                <th>Department Name</th>
+                <th>Action</th>
+            </tr>
+            <tr>
+                <td><input type="text" id="dept-id-add"></td>
+                <td><input type="text" id="dept-name-add"></td>
+                <td>
+                    <button type="button" id="dept-btn" class="btn btn-success" onclick="addDept();">
+                        Add Department
+                    </button>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-danger text-center" id="add-dept-response"> </td>
+            </tr>
+
+        </table>
+    </div>
+    <div class="container mt-5">
+        <table class="table table-borderless table-dark table-striped">
+            <tr>
+                <th>Department Name</th>
+
+                <th>Action</th>
+            </tr>
+            <tr>
+                <td>
+                    <select id="dept-id-delete">
+                        {{ range .Department }}
+                        <option value="{{ .DepartmentId }}">{{ .DepartmentName}}</option>
+                        {{ end }}
+                    </select>
+                </td>
+                <td>
+                    <button type="button" id="dept-btn" class="btn btn-danger" onclick="deleteDept();">
+                        Delete Department
+                    </button>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" id="delete-dept-response" class="text-danger text-center"> </td>
+            </tr>
+        </table>
+
+
+
+    </div>
+    <div class="container mt-5">
+        <h2>Course table</h2>
+        <table class="table table-borderless table-dark table-striped" id="course-table">
+            <thead>
+                <tr>
+                    <th>Course Id</th>
+                    <th>Course Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .Courses}}
+                <tr>
+                    <td>{{ .CourseId }}</td>
+                    <td>{{ .CourseName}}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="container mt-5">
+
+        <table class="table table-borderless table-dark table-striped">
+            <thead>
+                <tr>
+                    <th>Course Id</th>
+                    <th>Course Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td><input type="text" id="course-id-add"></td>
+                    <td><input type="text" id="course-name-add"></td>
+                    <td>
+                        <button type="button" id="course-add-btn" class="btn btn-success" onclick="addCourse();">
+                            Add Course
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="text-danger text-center" id="add-course-response"> </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="container mt-5">
+        <table class="table table-borderless table-dark table-striped">
+            <thead>
+                <tr>
+                    <th>Course Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <select id="course-id-delete">
+                            {{ range .Courses }}
+                            <option value="{{ .CourseId }}">{{ .CourseName}}</option>
+                            {{ end }}
+                        </select>
+                    </td>
+                    <td>
+                        <button type="button" id="course-delete-btn" class="btn btn-danger"
+                            onclick="deleteCourse();">Delete Course</button>
+                    </td>
+                    <tr>
+                        <td colspan="3" class="text-danger text-center" id="delete-course-response"> </td>
+                    </tr>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+
+    <script type="text/javascript" charset="utf8"
+        src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#course-table').DataTable();
+        });
+        $(document).ready(function ($) {
+            $(".clickable-row").click(function () {
+                window.open($(this).data("href"), '_blank');
+            });
+        });
+
+        $(document).ready(function () {
+            $('#department-table').DataTable();
+        });
+        $(document).ready(function ($) {
+            $(".clickable-row").click(function () {
+                window.open($(this).data("href"), '_blank');
+            });
+        });
+
+
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+    <script src="/static/department_and_course/handle.js"></script>
+</body>
+
+</html>

@@ -24,12 +24,11 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		status := admin.GetStudentAccountStatus(Regnumber)
 		switch status {
 		case 0:
-			http.Redirect(w, r, "/student/signin", http.StatusSeeOther)
+			http.Redirect(w, r, "/student/signout", http.StatusSeeOther)
 		case 1:
 			fmt.Println("Student should completely register first!")
 			http.Redirect(w, r, "/student/signin/complete_registration", http.StatusSeeOther)
 		case 2:
-
 			if session.Values["SESSION_KEY"] != nil {
 				http.Redirect(w, r, "/student/dashboard/session", http.StatusSeeOther)
 			} else {

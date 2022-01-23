@@ -141,12 +141,12 @@ type ReviewAttendance struct {
 }
 
 type Course struct {
-	CourseId   string
-	CourseName string
+	CourseId   string `json:"courseid"`
+	CourseName string `json:"coursename"`
 }
 type Department struct {
-	DepartmentId   string
-	DepartmentName string
+	DepartmentId   string `json:"deptid"`
+	DepartmentName string `json:"deptname"`
 }
 type ClassroomTableData struct {
 	Classrooms []Classroom
@@ -158,6 +158,11 @@ type StudentsDetails struct {
 	Studentname string
 	Regnumber   string
 	Image       template.URL
+	Email       string
+}
+type TeachersDetails struct {
+	Teachername string
+	TeacherId   string
 	Email       string
 }
 type ClassroomTableDetails struct {

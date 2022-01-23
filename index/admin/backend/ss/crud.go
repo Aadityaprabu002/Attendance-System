@@ -2,6 +2,10 @@ package admin
 
 import (
 	"attsys/connections"
+	"html/template"
+	"io/ioutil"
+	"net/http"
+
 	"attsys/models"
 	"bytes"
 	"database/sql"
@@ -14,6 +18,51 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+func convertToBase64String(ImagePath string) string {
+	bytes, err := ioutil.ReadFile(ImagePath)
+	if err != nil {
+		fmt.Println("Error ! Image path is bad")
+		return ""
+	}
+	var base64Encoding string
+	mimeType := http.DetectContentType(bytes)
+	switch mimeType {
+	case "image/jpeg":
+		base64Encoding += "data:image/jpeg;base64,"
+	case "image/png":
+		base64Encoding += "data:image/png;base64,"
+	}
+
+	// Append the base64 encoded output
+	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
+
+	// Print the full base64 representation of the image
+	return base64Encoding
+}
+func GetAllStudents() []models.StudentsDetails {
+	var Students []models.StudentsDetails
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		fmt.Println("failed to establish connection with sql")
+
+	}
+	defer db.Close()
+	query := `select regnumber,concat(firstname,' ',lastname),email,picture from students;`
+	result, err := db.Query(query)
+	if err != nil {
+		fmt.Println(err)
+		return Students
+	}
+	for result.Next() {
+		var temp models.StudentsDetails
+		var path string
+		result.Scan(&temp.Regnumber, &temp.Studentname, &temp.Email, &path)
+		temp.Image = template.URL(convertToBase64String(path))
+		Students = append(Students, temp)
+	}
+	return Students
+}
 func InsertStudent(newUser models.Student) bool {
 
 	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
@@ -225,12 +274,21 @@ func GetStudentDetails(Regnumber string) models.Student {
 	return student
 }
 
+func RemoveStudent(Regnumber string) bool {
+	conn := fmt.Sprintf("host = %s port = %d user = %s password = %d dbname = %s sslmode = disable", connections.Host, connections.Port, connections.User, connections.Password, connections.DBname)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	query := fmt.Sprintf(`delete from students where regnumber = '%s'`, Regnumber)
+	_, err = db.Query(query)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return err == nil
+}
 func EncryptPassword(password string) string {
 	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 8)
 	return string(encryptedPassword)
 }
-
-// func ValidateStudent(newStudent models.StudentSignup) string {
-// 	re := regexp.MustCompile()
-// 	re.Match()
-// }

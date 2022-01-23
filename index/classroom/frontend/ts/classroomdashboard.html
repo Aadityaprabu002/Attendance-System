@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Classroom</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
@@ -90,10 +90,12 @@
         <table id="student-table" class="table table-borderless table-dark table-striped  mt-4">
 
             <thead>
-                <th>Student Name</th>
-                <th>Register Number</th>
-                <th>Image</th>
-                <th>Email</th>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Register Number</th>
+                    <th>Image</th>
+                    <th>Email</th>
+                </tr>
             </thead>
             <tbody>
                 {{ range .Students }}

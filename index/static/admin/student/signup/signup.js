@@ -1,4 +1,30 @@
 
+function removeStudent(){
+    let rollno = document.getElementById("rollno-remove").value;
+
+    if (rollno.length !=10){
+        document.getElementById('remove-student-response').innerHTML = "regnumber should be having 10 digits";
+        return;
+    }
+    let obj = JSON.stringify(
+        {
+           "regnumber":rollno
+        }
+    );
+
+    xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(){
+        if(this.readyState == 4 && this.status == 200){
+            var result = JSON.parse(this.responseText);
+            document.querySelector("#remove-student-response").innerHTML =  result.Response; 
+        }
+    }
+    xhr.open("POST","/admin/student/handlestudent");
+    xhr.setRequestHeader("content-type","application/json")
+    xhr.send(obj);
+}
+
+
 // form and ajax
 function sendRequest(obj){
     xhr = new XMLHttpRequest();

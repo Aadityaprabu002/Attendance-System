@@ -9,30 +9,37 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
-        body{background: white; font-family: Arial;}
-        .head-bg{background : rgba(44,49,53,255);color :white}
-        .head-content{font-size: 2em; font-family:arial; font-weight: bolder;}
+        body {
+            background: white;
+            font-family: Arial;
+        }
+
+        .head-bg {
+            background: rgba(44, 49, 53, 255);
+            color: white
+        }
+
+        .head-content {
+            font-size: 2em;
+            font-family: arial;
+            font-weight: bolder;
+        }
     </style>
 </head>
 
 <body>
-    <nav class="navbar head-bg d-flex justify-content-center" style = "min-height: 10vh;">
-        <div class="navbar-brand head-content" >
+    <nav class="navbar head-bg d-flex justify-content-center" style="min-height: 10vh;">
+        <div class="navbar-brand head-content">
             Complete Registration
         </div>
     </nav>
     <div class="container mt-5">
         <div class="text-center">
-            <h6>Please fill up your email and take a good picture of yourself </h6>
+            <h6>Please fill up your email and password</h6>
             <h6>Then proceed to your dashboard</h6>
         </div>
         <div class="d-flex justify-content-center">
-            <div id="camera"></div>
-        </div>
-      
-        <div class="d-flex justify-content-center">
-            <table class="table table-borderless table-striped table-dark" >
-
+            <table class="table table-borderless table-striped table-dark">
                 <tr>
                     <th>Email</th>
                     <td><input name="email" id="email" type="email" required></td>
@@ -45,21 +52,18 @@
                     <th>Confirm Password</th>
                     <td><input name="password" id="password" type="password" required></td>
                 </tr>
-                <tr >
-                    <td colspan="2"  class="text-center">
+                <tr>
+                    <td colspan="2" class="text-center">
                         <button type="button" id="submit-btn" class="btn btn-success">Submit</button>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2" id="response" class="text-center text-danger"></td>
                 </tr>
-               
             </table>
         </div>
     </div>
-    <script src="/static/camera/facedetection/face-api.min.js"></script>
-    <script src="/static/camera/camera.js"></script>
-    <script src="/static/student/complete-registration.js"></script>
+    <script src="/static/teacher/complete-registration.js"></script>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"

@@ -2,6 +2,7 @@ package main
 
 import (
 	adminas "attsys/admin/backend/as"
+	admin_dept_course "attsys/admin/backend/department_and_courses"
 	adminss "attsys/admin/backend/ss"
 	admints "attsys/admin/backend/ts"
 	student_classroom "attsys/classroom/backend/ss"
@@ -17,28 +18,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// var dummy = sessions.NewCookieStore([]byte(key.GetSecretKey()))
-
-// func handleSession(w http.ResponseWriter, r *http.Request) {
-// 	ssn, _ := dummy.Get(r, "dummy")
-
-// 	if ssn.IsNew {
-// 		ssn.Values["name"] = "value"
-// 		ssn.Options = &sessions.Options{
-// 			Domain:   "/",
-// 			MaxAge:   10,
-// 			HttpOnly: true,
-// 		}
-// 		ssn.Save(r, w)
-// 		fmt.Println("New session! Existing Session Expired!")
-// 		fmt.Println(ssn)
-// 	} else {
-// 		fmt.Println("")
-// 		fmt.Println("Old session!")
-// 		fmt.Println(ssn)
-// 	}
-
-// }
 func initRouter() {
 
 	publicfs := http.FileServer(http.Dir("./static/public"))
@@ -46,7 +25,13 @@ func initRouter() {
 	admin := mux.NewRouter()
 	admin.HandleFunc("/", adminas.Index)
 	admin.HandleFunc("/admin/student/signup", adminss.Signup)
+	admin.HandleFunc("/admin/student/handlestudent", adminss.HandleStudent).Methods("POST")
 	admin.HandleFunc("/admin/teacher/signup", admints.TeacherSignup)
+	admin.HandleFunc("/admin/teacher/handleteacher", admints.HandleTeacher).Methods("POST")
+	admin.HandleFunc("/admin/department_and_courses", admin_dept_course.DepartmentAndCourse).Methods("GET")
+	admin.HandleFunc("/admin/handledepartment", admin_dept_course.HandleDepartment).Methods("POST")
+	admin.HandleFunc("/admin/handlecourse", admin_dept_course.HandleCourse).Methods("POST")
+
 	admin.PathPrefix("/static/").Handler(http.StripPrefix("/static/", adminfs))
 
 	public := mux.NewRouter()
@@ -55,6 +40,7 @@ func initRouter() {
 	public.HandleFunc("/student/signin", student.Signin)
 	public.HandleFunc("/student/signin/complete_registration", student.CompleteRegistration)
 	public.HandleFunc("/teacher/signin", teacher.Signin)
+	public.HandleFunc("/teacher/signin/complete_registration", teacher.CompleteRegistration)
 	public.HandleFunc("/teacher/signout", teacher.Signout)
 	public.HandleFunc("/teacher/dashboard", teacher_classroom.Dashboard)
 	public.HandleFunc("/teacher/dashboard/classroomdashboard/{ClassroomId}", teacher_classroom.ClassroomDashboard)
