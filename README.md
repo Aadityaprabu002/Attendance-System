@@ -19,6 +19,7 @@
 - pgsql
 - pgagent (schedule maintainer)
 
+Demo for the whole project is provided in this link [click here](https://youtube.com/playlist?list=PLCk1Y31wvMhUsFFMXJ8afSK5ZLtYU2Yb6)
 
 
  
