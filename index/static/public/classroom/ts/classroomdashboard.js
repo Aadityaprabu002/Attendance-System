@@ -20,15 +20,23 @@ function sendRequest(obj){
 function submitForm(){
 
     let today = new Date();
-    let dt = today.getFullYear()+'-'+today.getMonth()+1+'-'+today.getDate();
-    console.log(dt);
-    let st = document.querySelector("#start_time").value
-    let et = document.querySelector("#end_time").value; 
-    
+    let dt = today.getFullYear()+'-'+(parseInt(today.getMonth())+1)+'-'+today.getDate();
+    let st = document.querySelector("#start_time").value ;
+    let et = document.querySelector("#end_time").value ; 
+  
+    if(st != "" || et != "") {
+        st+=":00";
+        et+=":00";
+    }else {
+        document.querySelector("#response").innerHTML = "Invalid start time or end time!";
+        return;
+    }
+
     st = new Date(dt+" "+st);
     et = new Date(dt+" "+et);
     dt = new Date(dt);
-
+    console.log(dt);
+    console.log(st,et);
     if (st.getTime() > et.getTime()){
         document.querySelector("#response").innerHTML = "Start time greater than end time! ";
         return;
@@ -39,9 +47,7 @@ function submitForm(){
         document.querySelector("#response").innerHTML = "Session time less than 20 minutes! ";
         return;
     }
-
-    // st.setTime(st.getTime() - st.getTimezoneOffset()*60*1000)
-    // et.setTime(et.getTime() - et.getTimezoneOffset()*60*1000);
+    console.log('Sending session timings....');
 
     let obj = JSON.stringify({
        "date":dt,

@@ -154,7 +154,7 @@ func ClassroomDashboard(w http.ResponseWriter, r *http.Request) {
 			loc, _ := time.LoadLocation("Asia/Kolkata")
 			params.Start_time = params.Start_time.In(loc)
 			params.End_time = params.End_time.In(loc)
-
+			params.Date = params.Date.In(loc)
 			fmt.Println("New session details:", params)
 
 			if err != nil {
